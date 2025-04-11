@@ -65,5 +65,41 @@ Hazina is a modern, mobile-first web application designed to help individuals an
 
 ---
 
-## 📱 Platform Structure
+
+---
+
+## 🔧 Getting Started (Dev Setup)
+
+```bash
+# Clone repository
+git clone https://github.com/yourusername/hazina.git
+cd hazina
+
+# Install dependencies
+npm install
+
+# Run locally
+npm run dev
+
+# Build for production
+npm run build
+🧪 Future Features
+Native mobile app (React Native or Flutter)
+
+Push notifications (web & mobile)
+
+OCR for automatic invoice entry
+
+Bank & SACCO API integrations
+
+Forum/Community section
+
+🤝 Partnerships & Licensing
+Hazina works with trusted financial service providers like Etica Ltd, earning affiliate commissions on user conversions.
+All rights reserved © 2025 Mantle Networks.
+
+👤 Author
+math3wsl3vi
+Founder @ Mantle Networks
+"Empowering people through financial clarity and simplicity."
 
