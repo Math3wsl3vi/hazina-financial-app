@@ -8,12 +8,33 @@ module.exports = {
 	  ],
   theme: {
   	extend: {
+		fontFamily: {
+			poppins: ['var(--font-poppins)'],
+			geist: ['var(--font-geist-sans)'],
+			mono: ['var(--font-geist-mono)'],
+		  },
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
+			green: {
+				1:'#22b73a'
+			},
+			navy: {
+				1:'#2c3e50'
+			},
+			accent: {
+				1:'#f39c12',
+				2:'#f1c40f'
+			},
+			soft: {
+				1:'#f8f9fa'
+			},
+			textColor: {
+				1:'#34495e'
+			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
