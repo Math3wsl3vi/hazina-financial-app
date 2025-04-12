@@ -1,5 +1,7 @@
-  import BudgetInputSection from '@/components/home/BudgetInput'
+import BudgetInputSection from '@/components/home/BudgetInput'
+import Budgets from '@/components/home/Budgets'
 import HelloSection from '@/components/home/HelloSection'
+import IncomeData from '@/components/home/IncomeData'
 import React from 'react'
 
   const Perosnal = () => {
@@ -9,6 +11,8 @@ import React from 'react'
         <HelloSection/>
         {/*budget */}
         <BudgetInputSection/>
+        <IncomeData/>
+        <Budgets/>
       </div>
     )
   }
