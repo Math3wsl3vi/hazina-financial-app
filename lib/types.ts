@@ -34,3 +34,26 @@ export interface SavingsEntry {
     | 'Education'
     | 'Investment'
     | 'Other';
+
+    export type DebtRepaymentStrategy = 
+  | 'avalanche' 
+  | 'snowball' 
+  | 'consolidation';
+
+export interface DebtEntry {
+  id: string;
+  name: string;
+  amount: number;
+  interestRate: number;
+  minimumPayment: number;
+  dueDate: string;
+  strategy: DebtRepaymentStrategy;
+  amountPaid: number;
+  notes?: string;
+}
+
+export interface DebtRange {
+  label: string;
+  min: number;
+  max: number;
+}
