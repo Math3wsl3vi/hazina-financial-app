@@ -21,7 +21,7 @@ const BudgetInputSection = () => {
   return (
     <div className="flex items-center justify-center">
       <Dialog>
-        <DialogTrigger className='flex flex-col gap-4 p-4 bg-gray-800 m-4 rounded-2xl shadow-lg text-white font-poppins w-[92%]'>
+        <DialogTrigger className='flex flex-col gap-4 p-4 bg-gray-800 m-4 rounded-2xl shadow-lg text-white font-poppins w-[92%] text-sm'>
           Edit Your Monthly Income
         </DialogTrigger>
         <DialogContent className="">
