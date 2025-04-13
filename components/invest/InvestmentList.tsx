@@ -31,7 +31,7 @@ export default function InvestmentList({ investments }: InvestmentListProps) {
   return (
     <div className="mt-8 font-poppins">
     <h2 className="text-xl font-semibold">Your Investments</h2>
-    <p className="text-lg my-2">Total Invested: ${totalInvested.toFixed(2)}</p>
+    <p className="text-lg my-2">Total Invested: Ksh {totalInvested.toFixed(2)}</p>
     
     <div className="mt-4 space-y-3">
       {investments.map((item, index) => (
