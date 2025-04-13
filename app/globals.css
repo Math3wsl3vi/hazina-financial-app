@@ -31,6 +31,10 @@ a {
 }
 
 
+::-webkit-scrollbar{
+  display:none;
+}
+
 
 @layer base {
   :root {
