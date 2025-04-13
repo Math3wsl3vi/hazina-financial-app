@@ -36,7 +36,9 @@ export default function RootLayout({
      <body className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable}`}>
         <Navbar/>
         {children}
+       <div className="mt-[10]">
         <BottomBar/>
+       </div>
       </body>
     </html>
   );
