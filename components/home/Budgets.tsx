@@ -48,7 +48,7 @@ const Budgets = () => {
 
   return (
     <div className='p-4'>
-      <div className='flex justify-between px-2 items-center'>
+      <div className='flex justify-between items-center'>
         <h1 className='text-xl font-semibold font-poppins text-gray-800'>Budgets</h1>
         <button className='border border-gray-300 p-2 rounded-full px-3 font-poppins text-xs'>Show all</button>
       </div>
