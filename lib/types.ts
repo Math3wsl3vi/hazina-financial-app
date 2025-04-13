@@ -57,3 +57,62 @@ export interface DebtRange {
   min: number;
   max: number;
 }
+
+export interface Advisor {
+    id: string;
+    name: string;
+    specialization: string[];
+    credentials: string;
+    experience: number;
+    rating: number;
+    languages: string[];
+    availability: Availability[];
+    bio: string;
+    imageUrl: string;
+  }
+  
+  export interface Availability {
+    date: string;
+    slots: TimeSlot[];
+  }
+  
+  export interface TimeSlot {
+    time: string;
+    booked: boolean;
+  }
+  
+  export interface Appointment {
+    id: string;
+    advisorId: string;
+    userId: string;
+    date: string;
+    time: string;
+    notes: string;
+    status: 'scheduled' | 'completed' | 'cancelled';
+  }
+  
+  export interface FinancialHealth {
+    score: number;
+    debtToIncome: number;
+    savingsRate: number;
+    investmentDiversity: number;
+    lastUpdated: string;
+  }
+
+  export interface Availability {
+    date: string; // YYYY-MM-DD format
+    slots: TimeSlot[];
+  }
+  
+  export interface TimeSlot {
+    start: string; // HH:MM format (24-hour)
+    end: string;
+    booked: boolean;
+  }
+  
+  export interface CalendarDay {
+    date: Date;
+    isCurrentMonth: boolean;
+    isToday: boolean;
+    hasAvailability: boolean;
+  }
