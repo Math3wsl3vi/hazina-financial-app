@@ -102,6 +102,7 @@ const Budgets = () => {
           )
         })}
       </div>
+      <div className='h-[55px]'></div>
     </div>
   )
 }
