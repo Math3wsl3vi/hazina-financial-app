@@ -47,7 +47,7 @@ const Navbar = () => {
           <Link href="/profile" className="py-2 text-lg border-b" onClick={() => setSidebarOpen(false)}>
             Profile
           </Link>
-          <button className="mt-4 w-full text-center bg-green-1 text-white py-2 rounded" onClick={handleLogout}>
+          <button className="mt-4 w-full text-center bg-gray-800 text-white py-2 rounded" onClick={handleLogout}>
             Logout
           </button>
         </div>
