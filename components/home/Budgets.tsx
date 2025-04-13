@@ -50,7 +50,7 @@ const Budgets = () => {
     <div className='p-4'>
       <div className='flex justify-between px-2 items-center'>
         <h1 className='text-xl font-semibold font-poppins text-gray-800'>Budgets</h1>
-        <button className='border border-gray-300 p-2 rounded-full px-3 font-poppins text-sm'>Show all</button>
+        <button className='border border-gray-300 p-2 rounded-full px-3 font-poppins text-xs'>Show all</button>
       </div>
 
       <div className='mt-5 flex flex-col gap-4'>
@@ -92,7 +92,7 @@ const Budgets = () => {
                 <div className='mt-3 ml-16'>
                   {category.subcategories.map((sub, i) => (
                     <div key={i} className='py-1 flex justify-between border-b border-dashed text-sm'>
-                      <span className='font-poppins text-gray-700'>{sub.title}</span>
+                      <span className='font-poppins text-gray-700 text-sm'>{sub.title}</span>
                       <span className='text-gray-500'>Ksh {sub.spent}</span>
                     </div>
                   ))}
@@ -102,7 +102,7 @@ const Budgets = () => {
           )
         })}
       </div>
-      <div className='h-[55px]'></div>
+      <div className='h-[65px]'></div>
     </div>
   )
 }
