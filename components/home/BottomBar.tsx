@@ -4,7 +4,7 @@ import React from 'react'
 
 const BottomBar = () => {
   return (
-    <div className='flex items-center justify-between md:px-10 px-5 py-5 bg-slate-50 fixed bottom-0 w-full md:hidden '>
+    <div className='flex items-center justify-between md:px-10 px-5 py-5 bg-slate-50  w-full md:hidden '>
         <Link href='/home/home-personal' className='flex items-center justify-center flex-col gap-2 cursor-pointer'>
             <Image src='/images/budget.png' alt='budget' width={20} height={20}/>
             <h1 className='font-poppins text-sm font-semibold'>Budget</h1>
