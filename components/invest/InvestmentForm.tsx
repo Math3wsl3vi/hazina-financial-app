@@ -47,18 +47,18 @@ export default function InvestmentForm({ onInvest }: InvestmentFormProps) {
   const getRiskExamples = (): string[] => {
     const examples = {
       local: {
-        low: ["Government bonds", "Fixed deposits", "Money market funds"],
-        medium: ["Blue-chip stocks", "REITs", "Corporate bonds"],
-        high: ["Startup investments", "Cryptocurrencies", "Penny stocks"],
+        low: ["Treasury bonds", "Treasury bill", "Money market funds","Commercial papers"],
+        medium: ["Fixed Income Funds", "Balanced Fund", "Corporate bonds"],
+        high: ["Equities", "Sector-specific funds", "Growth-oriented Unit Trusts"],
       },
       global: {
-        low: ["US Treasury bonds", "Global index funds", "ETFs"],
+        low: ["Money market fund(EUR/USD)", "US Treasury Bills", "German bunds","High-Grade Corporate Bonds"],
         medium: [
-          "S&P 500 stocks",
-          "International REITs",
-          "Emerging market funds",
+          "Diversified Bond ETFs",
+          "Real Estate ETFs",
+          "Index funds",
         ],
-        high: ["Tech startups", "Forex trading", "Crypto ETFs"],
+        high: ["Emerging market ETFs", "Crypto currency", "Tech-focused ETFs","Single stock investing"],
       },
     };
     return examples[investmentType][riskLevel];
