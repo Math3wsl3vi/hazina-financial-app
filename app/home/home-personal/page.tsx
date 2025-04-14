@@ -13,6 +13,7 @@ import React from 'react'
         <BudgetInputSection/>
         <IncomeData/>
         <Budgets/>
+        <div className='h-[85px]'></div>
       </div>
     )
   }

@@ -1,6 +1,7 @@
 'use client'
 import React, { useState } from 'react'
 import Image from 'next/image'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 
 const budgetsData = [
   {
@@ -9,6 +10,8 @@ const budgetsData = [
     allocated: 25000,
     spent: 18000,
     icon: '/images/needs.png',
+    color: 'bg-teal-100 border-teal-300 text-teal-800',
+    progressColor: 'bg-teal-500',
     subcategories: [
       { title: 'Rent & Utilities', spent: 10000 },
       { title: 'Food', spent: 5000 },
@@ -21,6 +24,8 @@ const budgetsData = [
     allocated: 15000,
     spent: 7000,
     icon: '/images/need.png',
+    color: 'bg-amber-100 border-amber-300 text-amber-800',
+    progressColor: 'bg-amber-500',
     subcategories: [
       { title: 'Subscriptions', spent: 3000 },
       { title: 'Shopping', spent: 4000 }
@@ -32,6 +37,8 @@ const budgetsData = [
     allocated: 10000,
     spent: 2000,
     icon: '/images/piggy-bank.png',
+    color: 'bg-indigo-100 border-indigo-300 text-indigo-800',
+    progressColor: 'bg-indigo-500',
     subcategories: [
       { title: 'MMF', spent: 1000 },
       { title: 'Emergency Fund', spent: 1000 }
@@ -48,52 +55,73 @@ const Budgets = () => {
 
   return (
     <div className='p-4'>
-      <div className='flex justify-between items-center'>
-        <h1 className='text-xl font-semibold font-poppins text-gray-800'>Budgets</h1>
-        <button className='border border-gray-300 p-2 rounded-full px-3 font-poppins text-xs'>Show all</button>
+      <div className='flex justify-between items-center mb-6'>
+        <h1 className='text-2xl font-bold font-poppins text-gray-800'>Budget Categories</h1>
+        <button className='border border-blue-500 text-blue-500 hover:bg-blue-50 px-4 py-2 rounded-full font-poppins text-sm transition-colors'>
+          View All
+        </button>
       </div>
 
-      <div className='mt-5 flex flex-col gap-4'>
+      <div className='flex flex-col gap-5'>
         {budgetsData.map((category, index) => {
-          const progress = (category.spent / category.allocated) * 100
+          const progress = Math.min((category.spent / category.allocated) * 100, 100)
+          const isOverBudget = category.spent > category.allocated
 
           return (
             <div
               key={category.title}
-              className='bg-slate-100 p-4 rounded-2xl shadow-sm'
+              className={`border rounded-2xl p-5 ${category.color} shadow-xs hover:shadow-sm transition-shadow`}
             >
               <div
                 className='flex items-center justify-between cursor-pointer'
                 onClick={() => toggleSubcategories(index)}
               >
-                <div className='flex items-center gap-4'>
-                  <div className='bg-white rounded-xl w-14 h-14 flex items-center justify-center'>
-                    <Image src={category.icon} alt={category.title} width={30} height={30} />
+                <div className='flex items-center gap-4 w-full'>
+                  <div className={`rounded-xl w-16 h-16 flex items-center justify-center ${category.color.split(' ')[0]} border-2 ${category.color.split(' ')[1]}`}>
+                    <Image 
+                      src={category.icon} 
+                      alt={category.title} 
+                      width={32} 
+                      height={32}
+                      className='object-contain'
+                    />
                   </div>
-                  <div>
-                    <h2 className='font-poppins font-medium text-lg'>{category.title} ({category.percentage}%)</h2>
-                    <p className='text-gray-500 text-sm font-poppins'>
-                      Ksh {category.spent} / {category.allocated}
-                    </p>
-                    <div className='w-full bg-gray-300 h-2 rounded-full mt-1'>
-                      <div
-                        className='bg-blue-600 h-2 rounded-full'
-                        style={{ width: `${progress}%` }}
-                      />
+                  
+                  <div className='flex-1'>
+                    <div className='flex justify-between items-center'>
+                      <h2 className='font-poppins font-bold text-lg'>{category.title}</h2>
+                      <span className='text-sm font-medium'>
+                        {category.spent.toLocaleString()}/{category.allocated.toLocaleString()} Ksh
+                      </span>
+                    </div>
+                    
+                    <div className='flex items-center gap-2 mt-1'>
+                      <div className='w-full bg-white bg-opacity-70 h-3 rounded-full overflow-hidden'>
+                        <div
+                          className={`h-full rounded-full ${category.progressColor} ${isOverBudget ? '!bg-red-500' : ''}`}
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                      <span className='text-xs font-medium whitespace-nowrap'>
+                        {category.percentage}%
+                      </span>
                     </div>
                   </div>
                 </div>
-                <span className='text-sm text-blue-600 font-poppins'>
-                  {openIndex === index ? 'Hide' : 'View'}
-                </span>
+
+                <button className='ml-4 text-gray-500 hover:text-gray-700'>
+                  {openIndex === index ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                </button>
               </div>
 
               {openIndex === index && (
-                <div className='mt-3 ml-16'>
+                <div className='mt-4 pl-20 space-y-3'>
                   {category.subcategories.map((sub, i) => (
-                    <div key={i} className='py-1 flex justify-between border-b border-dashed text-sm'>
-                      <span className='font-poppins text-gray-700 text-sm'>{sub.title}</span>
-                      <span className='text-gray-500'>Ksh {sub.spent}</span>
+                    <div key={i} className='flex justify-between items-center py-2 border-b border-gray-200 last:border-0'>
+                      <span className='font-poppins text-gray-700'>{sub.title}</span>
+                      <span className='font-medium'>
+                        {sub.spent.toLocaleString()} Ksh
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -102,7 +130,6 @@ const Budgets = () => {
           )
         })}
       </div>
-      <div className='h-[75px]'></div>
     </div>
   )
 }
