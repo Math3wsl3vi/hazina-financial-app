@@ -1,33 +1,39 @@
-"use client"
+'use client';
+
 import SavingsForm from '@/components/savings/SavingsForm';
 import SavingsList from '@/components/savings/SavingsList';
+import { useSavings } from '@/hooks/useSavings';
+import { useAuth } from '@/context/AuthContext';
+import { toast } from 'react-hot-toast';
 import { SavingsEntry } from '@/lib/types';
-import { useState, useEffect } from 'react';
-
-import { v4 as uuidv4 } from 'uuid';
 
 export default function SavingsPage() {
-  const [savings, setSavings] = useState<SavingsEntry[]>([]);
+  const { currentUser } = useAuth();
+  const { savings, loading, addSaving, deleteSaving } = useSavings();
 
-  // Load savings from localStorage on component mount
-  useEffect(() => {
-    const saved = localStorage.getItem('hazina-savings');
-    if (saved) {
-      setSavings(JSON.parse(saved));
+  const handleSave = async (newSaving: Omit<SavingsEntry, 'id'>) => {
+    if (!currentUser) {
+      toast.error('You must be logged in to save');
+      return;
     }
-  }, []);
 
-  // Save to localStorage whenever savings change
-  useEffect(() => {
-    localStorage.setItem('hazina-savings', JSON.stringify(savings));
-  }, [savings]);
-
-  const handleSave = (newSaving: Omit<SavingsEntry, 'id'>) => {
-    setSavings([...savings, { ...newSaving, id: uuidv4() }]);
+    try {
+      await addSaving(newSaving);
+      toast.success('Saved successfully!');
+    } catch (error) {
+      console.error('Firestore error:', error);
+      toast.error('Failed to save. Please try again.');
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setSavings(savings.filter((entry) => entry.id !== id));
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteSaving(id);
+      toast.success('Entry deleted');
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast.error('Failed to delete');
+    }
   };
 
   return (
@@ -42,10 +48,20 @@ export default function SavingsPage() {
 
         <div className="space-y-8">
           <SavingsForm onSave={handleSave} />
-          <SavingsList savings={savings} onDelete={handleDelete} />
+          
+          {loading ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500">Loading your savings...</p>
+            </div>
+          ) : (
+            <SavingsList 
+              savings={savings} 
+              onDelete={handleDelete} 
+            />
+          )}
         </div>
       </div>
-      <div className='h-[75px]'></div>
+      <div className="h-[75px]"></div>
     </div>
   );
 }

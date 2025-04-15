@@ -32,7 +32,7 @@ export default function SavingsForm({ onSave }: SavingsFormProps) {
       amount: parseFloat(amount),
       category,
       date,
-      notes: notes.trim() || undefined
+      notes: notes.trim() ||''
     });
 
     // Reset form

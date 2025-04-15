@@ -53,7 +53,7 @@ export default function SavingsList({ savings, onDelete }: SavingsListProps) {
                   </p>
                   {entry.notes && (
                     <p className="mt-1 text-sm text-gray-700">
-                      <span className="font-medium">Note:</span> {entry.notes}
+                      <span className="font-medium capitalize">Note:</span> {entry.notes}
                     </p>
                   )}
                 </div>

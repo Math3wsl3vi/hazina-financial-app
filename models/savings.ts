@@ -4,6 +4,6 @@ export interface SavingsEntry {
     amount: number;
     category: string;
     date: string;
-    notes?: string;
+    notes?: string | '';
     createdAt: Date;
   }

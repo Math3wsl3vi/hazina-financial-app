@@ -1,7 +1,9 @@
+// hooks/useSavings.ts
 import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { SavingsEntry } from '../models/savings';
-import { FirestoreService } from '@/service/firestoreService';
+import { collection, addDoc, deleteDoc, doc, onSnapshot, query, where } from 'firebase/firestore';
+import { useAuth } from '@/context/AuthContext';
+import { SavingsEntry } from '@/lib/types';
+import { db } from '@/configs/firebaseConfig';
 
 export function useSavings() {
   const { currentUser } = useAuth();
@@ -11,38 +13,49 @@ export function useSavings() {
   useEffect(() => {
     if (!currentUser) return;
 
-    const fetchSavings = async () => {
-      setLoading(true);
-      try {
-        const savingsData = await FirestoreService.getDocumentsByField(
-          'savings',
-          'userId',
-          currentUser.uid
-        );
-        setSavings(savingsData as SavingsEntry[]);
-      } catch (error) {
-        console.error('Error fetching savings:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    const q = query(
+      collection(db, 'savings'),
+      where('userId', '==', currentUser.uid)
+    );
 
-    fetchSavings();
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const savingsData: SavingsEntry[] = [];
+      snapshot.forEach((doc) => {
+        savingsData.push({
+          id: doc.id,
+          ...doc.data()
+        } as SavingsEntry);
+      });
+      setSavings(savingsData);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, [currentUser]);
 
-  const addSaving = async (saving: Omit<SavingsEntry, 'id' | 'userId' | 'createdAt'>) => {
+  const addSaving = async (saving: Omit<SavingsEntry, 'id'>) => {
     if (!currentUser) return;
     
     try {
-      await FirestoreService.addDocument('savings', {
+      await addDoc(collection(db, 'savings'), {
         ...saving,
-        userId: currentUser.uid
+        userId: currentUser.uid,
+        createdAt: new Date().toISOString()
       });
     } catch (error) {
-      console.error('Error adding saving:', error);
+      console.error('Error adding document: ', error);
       throw error;
     }
   };
 
-  return { savings, loading, addSaving };
+  const deleteSaving = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'savings', id));
+    } catch (error) {
+      console.error('Error deleting document: ', error);
+      throw error;
+    }
+  };
+
+  return { savings, loading, addSaving, deleteSaving };
 }

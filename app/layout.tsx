@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono,Poppins } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "react-hot-toast";
+import { AuthProvider } from "@/context/AuthContext";
 
 
 const geistSans = Geist({
@@ -14,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 const poppins = Poppins({
-  weight: ["400", "500", "600", "700"], // choose weights you need
+  weight: ["400", "500", "600", "700"], 
   subsets: ["latin"],
   variable: "--font-poppins",
 });
@@ -33,7 +35,10 @@ export default function RootLayout({
   return (
     <html lang="en">
      <body className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable}`}>
+      <AuthProvider>
         {children}
+        </AuthProvider>
+        <Toaster position="bottom-center" />
       </body>
     </html>
   );
