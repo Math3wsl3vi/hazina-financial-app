@@ -5,9 +5,10 @@ import { Frequency, InvestmentEntry, RiskLevel } from "@/lib/types";
 
 interface InvestmentListProps {
   investments: InvestmentEntry[];
+  onDelete: (id: string) => void;
 }
 
-export default function InvestmentList({ investments }: InvestmentListProps) {
+export default function InvestmentList({ investments,onDelete }: InvestmentListProps) {
   const totalInvested = investments.reduce((sum, item) => sum + item.amount, 0);
 
   const getFrequencyLabel = (freq: Frequency): string => {
@@ -50,10 +51,20 @@ export default function InvestmentList({ investments }: InvestmentListProps) {
               </span>
             </div>
           </div>
+          <div className="flex justify-between">
+            <div className="flex flex-col">
           {item.notes && <p className="mt-2 text-sm text-gray-600">Notes: {item.notes}</p>}
           <p className="mt-1 text-xs text-gray-500">
             {new Date(item.date).toLocaleDateString()}
           </p>
+          </div>
+          <button
+                  onClick={() => onDelete(item.id)}
+                  className="text-red-500 hover:text-red-700 text-sm font-medium"
+                >
+                  Delete
+                </button>
+          </div>
         </div>
       ))}
     </div>

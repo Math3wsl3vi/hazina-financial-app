@@ -14,8 +14,14 @@ export interface InvestmentEntry {
   frequency: Frequency;
   investmentType: InvestmentType;
   riskLevel: RiskLevel;
-  notes: string;
+  id: string;
+  userId: string;
+  type: 'local' | 'global' | 'real-estate' | 'crypto' | 'other';
+  name: string;
   date: string;
+  returnRate?: number;
+  notes?: string | null;
+  createdAt: string;
 }
 
 export interface SavingsEntry {
