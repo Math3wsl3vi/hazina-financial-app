@@ -4,6 +4,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const HelloSection = () => {
   const [name, setName] = useState<string | null>(null);
+  const [greeting, setGreeting] = useState("Hello");
 
   useEffect(() => {
     const auth = getAuth();
@@ -14,7 +15,17 @@ const HelloSection = () => {
       }
     });
 
-    return () => unsubscribe(); // cleanup
+    const getGreeting = () => {
+      const hour = new Date().getHours();
+      if (hour >= 5 && hour < 12) return "Good Morning";
+      if (hour >= 12 && hour < 17) return "Good Afternoon";
+      if (hour >= 17 && hour < 21) return "Good Evening";
+      return "Good Night";
+    };
+
+    setGreeting(getGreeting());
+
+    return () => unsubscribe();
   }, []);
 
   const now = new Date();
@@ -28,8 +39,12 @@ const HelloSection = () => {
 
   return (
     <div className="px-6 pt-5">
-      <h1 className="capitalize font-poppins">Good Morning {name ?? "..."}</h1>
-      <p className="font-poppins my-2">{date} {time}</p>
+      <h1 className="capitalize font-poppins">
+        {greeting} {name ?? "..."}
+      </h1>
+      <p className="font-poppins my-2">
+        {date} {time}
+      </p>
     </div>
   );
 };
