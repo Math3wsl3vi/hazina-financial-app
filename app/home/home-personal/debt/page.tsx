@@ -3,9 +3,9 @@ import DebtForm from '@/components/debt/DebtForm';
 import DebtList from '@/components/debt/DebtList';
 import DebtRangeSelector from '@/components/debt/DebtRangeSelector';
 import { DebtEntry, DebtRange } from '@/lib/types';
-import { useState, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-
+import { useState } from 'react';
+import { useDebts } from '@/hooks/useDebts';
+import { toast } from 'react-hot-toast';
 
 const debtRanges: DebtRange[] = [
   { label: 'Under 500K', min: 0, max: 499999 },
@@ -16,35 +16,40 @@ const debtRanges: DebtRange[] = [
 ];
 
 export default function DebtPage() {
-  const [debts, setDebts] = useState<DebtEntry[]>([]);
+  const { debts, loading, addDebt, updateDebt, deleteDebt } = useDebts();
   const [editingDebt, setEditingDebt] = useState<DebtEntry | null>(null);
   const [selectedRange, setSelectedRange] = useState<DebtRange | null>(null);
 
-  // Load from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('hazina-debts');
-    if (saved) {
-      setDebts(JSON.parse(saved));
+  const handleAddDebt = async (newDebt: Omit<DebtEntry, 'id'>) => {
+    try {
+      await addDebt(newDebt);
+      toast.success('Debt added successfully!');
+    } catch (error) {
+      toast.error('Failed to add debt');
+      console.error(error);
     }
-  }, []);
-
-  // Save to localStorage
-  useEffect(() => {
-    localStorage.setItem('hazina-debts', JSON.stringify(debts));
-  }, [debts]);
-
-  const handleAddDebt = (newDebt: Omit<DebtEntry, 'id'>) => {
-    setDebts([...debts, { ...newDebt, id: uuidv4() }]);
   };
 
-  const handleUpdateDebt = (updatedDebt: Omit<DebtEntry, 'id'>) => {
+  const handleUpdateDebt = async (updatedDebt: Omit<DebtEntry, 'id'>) => {
     if (!editingDebt) return;
-    setDebts(debts.map(d => d.id === editingDebt.id ? { ...updatedDebt, id: editingDebt.id } : d));
-    setEditingDebt(null);
+    try {
+      await updateDebt(editingDebt.id, updatedDebt);
+      toast.success('Debt updated successfully!');
+      setEditingDebt(null);
+    } catch (error) {
+      toast.error('Failed to update debt');
+      console.error(error);
+    }
   };
 
-  const handleDeleteDebt = (id: string) => {
-    setDebts(debts.filter(debt => debt.id !== id));
+  const handleDeleteDebt = async (id: string) => {
+    try {
+      await deleteDebt(id);
+      toast.success('Debt deleted successfully!');
+    } catch (error) {
+      toast.error('Failed to delete debt');
+      console.error(error);
+    }
   };
 
   const handleRangeSelect = (range: DebtRange) => {
@@ -54,6 +59,16 @@ export default function DebtPage() {
   const filteredDebts = selectedRange
     ? debts.filter(debt => debt.amount >= selectedRange.min && debt.amount <= selectedRange.max)
     : debts;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8 font-poppins">
+        <div className="max-w-6xl mx-auto text-center">
+          <p className="text-gray-600">Loading your debts...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8 font-poppins">

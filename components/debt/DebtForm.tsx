@@ -84,9 +84,8 @@ export default function DebtForm({ initialData, onSubmit, onCancel }: DebtFormPr
             <Input
               type="number"
               name="amount"
-              min="0"
               step="0.01"
-              value={debt.amount}
+              value={debt.amount === 0 ? '' : debt.amount}
               onChange={handleChange}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
               required
@@ -100,10 +99,9 @@ export default function DebtForm({ initialData, onSubmit, onCancel }: DebtFormPr
             <Input
               type="number"
               name="interestRate"
-              min="0"
               max="100"
               step="0.01"
-              value={debt.interestRate}
+              value={debt.interestRate === 0? '':debt.interestRate}
               onChange={handleChange}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
               required
@@ -117,9 +115,8 @@ export default function DebtForm({ initialData, onSubmit, onCancel }: DebtFormPr
             <Input
               type="number"
               name="minimumPayment"
-              min="0"
               step="0.01"
-              value={debt.minimumPayment}
+              value={debt.minimumPayment === 0? '':debt.minimumPayment}
               onChange={handleChange}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
               required
@@ -147,9 +144,8 @@ export default function DebtForm({ initialData, onSubmit, onCancel }: DebtFormPr
             <Input
               type="number"
               name="amountPaid"
-              min="0"
               step="0.01"
-              value={debt.amountPaid}
+              value={debt.amountPaid === 0? '':debt.amountPaid}
               onChange={handleChange}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
               required

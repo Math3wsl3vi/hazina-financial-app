@@ -1,9 +1,11 @@
+// hooks/useDebts.ts
 import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { DebtEntry } from '../models/debt';
-import { FirestoreService } from '@/service/firestoreService';
+import { collection, addDoc, deleteDoc, doc, onSnapshot, query, where, updateDoc } from 'firebase/firestore';
+import { useAuth } from '@/context/AuthContext';
+import { DebtEntry } from '@/lib/types';
+import { db } from '@/configs/firebaseConfig';
 
-export function useDebt() {
+export function useDebts() {
   const { currentUser } = useAuth();
   const [debts, setDebts] = useState<DebtEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -11,32 +13,34 @@ export function useDebt() {
   useEffect(() => {
     if (!currentUser) return;
 
-    const fetchDebts = async () => {
-      setLoading(true);
-      try {
-        const debtsData = await FirestoreService.getDocumentsByField(
-          'debts',
-          'userId',
-          currentUser.uid
-        );
-        setDebts(debtsData as DebtEntry[]);
-      } catch (error) {
-        console.error('Error fetching debts:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    const q = query(
+      collection(db, 'debts'),
+      where('userId', '==', currentUser.uid)
+    );
 
-    fetchDebts();
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const debtsData: DebtEntry[] = [];
+      snapshot.forEach((doc) => {
+        debtsData.push({
+          id: doc.id,
+          ...doc.data()
+        } as DebtEntry);
+      });
+      setDebts(debtsData);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, [currentUser]);
 
-  const addDebt = async (debt: Omit<DebtEntry, 'id' | 'userId' | 'createdAt'>) => {
+  const addDebt = async (debt: Omit<DebtEntry, 'id'>) => {
     if (!currentUser) return;
     
     try {
-      await FirestoreService.addDocument('debts', {
+      await addDoc(collection(db, 'debts'), {
         ...debt,
-        userId: currentUser.uid
+        userId: currentUser.uid,
+        createdAt: new Date().toISOString()
       });
     } catch (error) {
       console.error('Error adding debt:', error);
@@ -44,5 +48,23 @@ export function useDebt() {
     }
   };
 
-  return { debts, loading, addDebt };
+  const updateDebt = async (id: string, debt: Partial<DebtEntry>) => {
+    try {
+      await updateDoc(doc(db, 'debts', id), debt);
+    } catch (error) {
+      console.error('Error updating debt:', error);
+      throw error;
+    }
+  };
+
+  const deleteDebt = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'debts', id));
+    } catch (error) {
+      console.error('Error deleting debt:', error);
+      throw error;
+    }
+  };
+
+  return { debts, loading, addDebt, updateDebt, deleteDebt };
 }
