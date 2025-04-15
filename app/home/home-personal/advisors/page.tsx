@@ -1,139 +1,47 @@
-"use client"
+"use client";
 import AdvisorCard from '@/components/advisor/AdvisorCard';
 import BookingModal from '@/components/advisor/BookingModal';
-import FinancialHealthCard from '@/components/advisor/FinancialHealthCard';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Advisor, Appointment, Availability, FinancialHealth, TimeSlot } from '@/lib/types';
-import { format } from 'date-fns';
-import { useState, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-
-
-const sampleAdvisors: Advisor[] = [
-  {
-    id: '1',
-    name: 'Erick Kinuthia',
-    specialization: ['Retirement Planning', 'Tax Strategies', 'Estate Planning'],
-    credentials: 'CFP®, CPA',
-    experience: 2,
-    rating: 4.8,
-    languages: ['English', 'Swahili'],
-    availability: generateAvailability(30),
-    bio: 'Certified Financial Planner with 2 years of experience helping clients achieve their retirement goals through comprehensive tax and estate planning strategies.',
-    imageUrl: '/images/advisor1.jpg',
-  },
-  {
-    id: '1',
-    name: 'Erick Kinuthia',
-    specialization: ['Retirement Planning', 'Tax Strategies', 'Estate Planning'],
-    credentials: 'CFP®, CPA',
-    experience: 2,
-    rating: 4.8,
-    languages: ['English', 'Swahili'],
-    availability: generateAvailability(30),
-    bio: 'Certified Financial Planner with 2 years of experience helping clients achieve their retirement goals through comprehensive tax and estate planning strategies.',
-    imageUrl: '/images/advisor1.jpg',
-  },
-  // Add more advisors...
-];
-
-function generateAvailability(daysToGenerate: number): Availability[] {
-  const availability: Availability[] = [];
-  const now = new Date();
-  
-  for (let i = 1; i <= daysToGenerate; i++) {
-    const date = new Date(now);
-    date.setDate(date.getDate() + i);
-    
-    // Skip weekends
-    if (date.getDay() === 0 || date.getDay() === 6) continue;
-    
-    const dateString = format(date, 'yyyy-MM-dd');
-    const slots: TimeSlot[] = [];
-    
-    // Generate morning slots
-    for (let hour = 9; hour <= 11; hour++) {
-      slots.push({
-        start: `${hour}:00`,
-        end: `${hour + 1}:00`,
-        time: `${hour}:00 - ${hour + 1}:00`, // ← Added
-        booked: Math.random() < 0.3
-      });
-      
-    }
-    
-    // Generate afternoon slots
-    for (let hour = 13; hour <= 16; hour++) {
-      slots.push({
-        start: `${hour}:00`,
-        end: `${hour + 1}:00`,
-        time: `${hour}:00 - ${hour + 1}:00`, // ← Added
-        booked: Math.random() < 0.3
-      });
-      
-    }
-    
-    availability.push({
-      date: dateString,
-      slots
-    });
-  }
-  
-  return availability;
-}
-
-const initialFinancialHealth: FinancialHealth = {
-  score: 72,
-  debtToIncome: 28,
-  savingsRate: 18,
-  investmentDiversity: 7,
-  lastUpdated: new Date().toISOString(),
-};
+import { useAdvisors } from '@/hooks/useAdvisor';
+import { useAppointments } from '@/hooks/useAppointments';
+import { useFinancialHealth } from '@/hooks/useFinancialHealth';
+import { Advisor } from '@/lib/types';
+import { useState } from 'react';
+import { toast } from 'react-hot-toast';
 
 export default function AdvisorPage() {
-  const [advisors, setAdvisors] = useState<Advisor[]>([]);
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const { advisors, loading: advisorsLoading } = useAdvisors();
+  const { appointments, loading: appointmentsLoading, bookAppointment } = useAppointments();
+  const { loading: healthLoading } = useFinancialHealth();
   const [selectedAdvisor, setSelectedAdvisor] = useState<Advisor | null>(null);
-  const [financialHealth, setFinancialHealth] = useState<FinancialHealth>(initialFinancialHealth);
   const [searchTerm, setSearchTerm] = useState('');
   const [specializationFilter, setSpecializationFilter] = useState<string>('');
-
-  useEffect(() => {
-    // In a real app, you would fetch advisors from an API
-    setAdvisors(sampleAdvisors);
-    
-    // Load appointments from localStorage
-    const savedAppointments = localStorage.getItem('hazina-appointments');
-    if (savedAppointments) {
-      setAppointments(JSON.parse(savedAppointments));
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('hazina-appointments', JSON.stringify(appointments));
-  }, [appointments]);
 
   const handleBookAppointment = (advisor: Advisor) => {
     setSelectedAdvisor(advisor);
   };
 
-  const handleConfirmBooking = (date: string, time: string, notes: string) => {
+  const handleConfirmBooking = async (date: string, time: string, notes: string) => {
     if (!selectedAdvisor) return;
     
-    const newAppointment: Appointment = {
-      id: uuidv4(),
-      advisorId: selectedAdvisor.id,
-      userId: 'current-user-id', // In a real app, use actual user ID
-      date,
-      time,
-      notes,
-      status: 'scheduled',
-    };
-    
-    setAppointments([...appointments, newAppointment]);
-    setSelectedAdvisor(null);
-    console.log(setFinancialHealth)
+    try {
+      await bookAppointment({
+        advisorId: selectedAdvisor.id,
+        advisorName: selectedAdvisor.name,
+        userId: 'current-user-id', // Will be replaced by auth context
+        date,
+        time,
+        notes,
+        status: 'scheduled',
+        createdAt: new Date().toISOString()
+      });
+      toast.success('Appointment booked successfully!');
+      setSelectedAdvisor(null);
+    } catch (error) {
+      toast.error('Failed to book appointment');
+      console.error(error);
+    }
   };
 
   const filteredAdvisors = advisors.filter(advisor => {
@@ -150,6 +58,15 @@ export default function AdvisorPage() {
     new Set(advisors.flatMap(advisor => advisor.specialization))
   );
 
+  if (advisorsLoading || appointmentsLoading || healthLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 font-poppins">
+        <div className="max-w-7xl mx-auto text-center">
+          <p className="text-gray-600">Loading advisor data...</p>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 font-poppins">
       <div className="max-w-7xl mx-auto">
@@ -162,7 +79,13 @@ export default function AdvisorPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-1 space-y-6">
-            <FinancialHealthCard health={financialHealth} />
+          {/* {financialHealth ? (
+          <FinancialHealthCard health={financialHealth} />
+        ) : (
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <p>Financial health data not available</p>
+          </div>
+        )} */}
             
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h2 className="text-xl font-semibold mb-4">Upcoming Appointments</h2>

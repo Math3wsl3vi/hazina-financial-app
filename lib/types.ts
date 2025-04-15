@@ -65,16 +65,16 @@ export interface DebtRange {
 }
 
 export interface Advisor {
-    id: string;
-    name: string;
-    specialization: string[];
-    credentials: string;
-    experience: number;
-    rating: number;
-    languages: string[];
-    availability: Availability[];
-    bio: string;
-    imageUrl: string;
+  id: string;
+  name: string;
+  specialization: string[];
+  credentials: string;
+  experience: number;
+  rating: number;
+  languages: string[];
+  availability: Availability[];
+  bio: string;
+  imageUrl: string;
   }
   
   export interface Availability {
@@ -89,12 +89,14 @@ export interface Advisor {
   
   export interface Appointment {
     id: string;
-    advisorId: string;
-    userId: string;
-    date: string;
-    time: string;
-    notes: string;
-    status: 'scheduled' | 'completed' | 'cancelled';
+  advisorId: string;
+  advisorName: string;
+  userId: string;
+  date: string;
+  time: string;
+  notes: string;
+  status: 'scheduled' | 'completed' | 'cancelled';
+  createdAt: string;
   }
   
   export interface FinancialHealth {
