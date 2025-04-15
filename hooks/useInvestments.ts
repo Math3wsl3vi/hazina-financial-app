@@ -33,7 +33,7 @@ export function useInvestments() {
     return () => unsubscribe();
   }, [currentUser]);
 
-  const addInvestment = async (investment: Omit<InvestmentEntry, 'id'>) => {
+  const addInvestment = async (investment: Omit<InvestmentEntry, 'id' | 'userId' | 'createdAt'>) => {
     if (!currentUser) return;
     
     // Optimistic update

@@ -20,7 +20,7 @@ import {
 import { Textarea } from "../ui/textarea";
 
 interface InvestmentFormProps {
-  onInvest: (entry: InvestmentEntry) => void;
+  onInvest: (entry: Omit<InvestmentEntry, 'id' | 'userId' | 'createdAt'>) => void;
 }
 
 export default function InvestmentForm({ onInvest }: InvestmentFormProps) {
@@ -29,18 +29,25 @@ export default function InvestmentForm({ onInvest }: InvestmentFormProps) {
   const [investmentType, setInvestmentType] = useState<InvestmentType>("local");
   const [riskLevel, setRiskLevel] = useState<RiskLevel>("medium");
   const [notes, setNotes] = useState<string>("");
+  const [name, setName] = useState<string>("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onInvest({
+    
+    const investmentData = {
       amount: parseFloat(amount),
       frequency,
       investmentType,
       riskLevel,
+      name,
       notes,
       date: new Date().toISOString(),
-    });
+      type: investmentType // Assuming 'type' should match investmentType
+    };
+
+    onInvest(investmentData);
     setAmount("");
+    setName("");
     setNotes("");
   };
 

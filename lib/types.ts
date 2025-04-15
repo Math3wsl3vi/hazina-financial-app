@@ -9,18 +9,18 @@ export interface SavingsEntry {
   date: string;
 }
 
+
 export interface InvestmentEntry {
+  id: string;
+  userId: string;
   amount: number;
   frequency: Frequency;
   investmentType: InvestmentType;
   riskLevel: RiskLevel;
-  id: string;
-  userId: string;
-  type: 'local' | 'global' | 'real-estate' | 'crypto' | 'other';
   name: string;
+  type: string;
   date: string;
-  returnRate?: number;
-  notes?: string | null;
+  notes?: string;
   createdAt: string;
 }
 

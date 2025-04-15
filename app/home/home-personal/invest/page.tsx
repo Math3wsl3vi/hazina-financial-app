@@ -10,7 +10,7 @@ export default function InvestmentsPage() {
   const { currentUser } = useAuth();
   const { investments, loading, addInvestment, deleteInvestment } = useInvestments();
 
-  const handleInvest = async (newInvestment: Omit<InvestmentEntry, 'id'>) => {
+  const handleInvest = async (newInvestment: Omit<InvestmentEntry,'id' | 'userId' | 'createdAt'>) => {
     if (!currentUser) {
       toast.error('You must be logged in to add investments');
       return;
