@@ -6,7 +6,7 @@ import React from 'react'
 
   const Perosnal = () => {
     return (
-      <div>
+      <div className='font-poppins'>
         {/* hello section */}
         <HelloSection/>
         {/*budget */}

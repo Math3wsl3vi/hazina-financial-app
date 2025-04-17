@@ -31,6 +31,11 @@ export interface SavingsEntry {
     date: string;
     notes?: string | '';
   }
+
+  export type Category =
+  | 'Wants'
+  |'Needs'
+  |'Savings'
   
   export type SavingsCategory =
     | 'General'

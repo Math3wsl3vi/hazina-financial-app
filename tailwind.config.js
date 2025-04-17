@@ -8,33 +8,39 @@ module.exports = {
 	  ],
   theme: {
   	extend: {
-		fontFamily: {
-			poppins: ['var(--font-poppins)'],
-			geist: ['var(--font-geist-sans)'],
-			mono: ['var(--font-geist-mono)'],
-		  },
+  		fontFamily: {
+  			poppins: [
+  				'var(--font-poppins)'
+  			],
+  			geist: [
+  				'var(--font-geist-sans)'
+  			],
+  			mono: [
+  				'var(--font-geist-mono)'
+  			]
+  		},
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
-			green: {
-				1:'#22b73a'
-			},
-			navy: {
-				1:'#2c3e50'
-			},
-			accent: {
-				1:'#f39c12',
-				2:'#f1c40f'
-			},
-			soft: {
-				1:'#f8f9fa'
-			},
-			textColor: {
-				1:'#34495e'
-			},
+  			green: {
+  				'1': '#22b73a'
+  			},
+  			navy: {
+  				'1': '#2c3e50'
+  			},
+  			accent: {
+  				DEFAULT: 'hsl(var(--accent))',
+  				foreground: 'hsl(var(--accent-foreground))'
+  			},
+  			soft: {
+  				'1': '#f8f9fa'
+  			},
+  			textColor: {
+  				'1': '#34495e'
+  			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
@@ -57,10 +63,6 @@ module.exports = {
   				DEFAULT: 'hsl(var(--muted))',
   				foreground: 'hsl(var(--muted-foreground))'
   			},
-  			accent: {
-  				DEFAULT: 'hsl(var(--accent))',
-  				foreground: 'hsl(var(--accent-foreground))'
-  			},
   			destructive: {
   				DEFAULT: 'hsl(var(--destructive))',
   				foreground: 'hsl(var(--destructive-foreground))'
@@ -75,6 +77,28 @@ module.exports = {
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
   			}
+  		},
+  		keyframes: {
+  			'accordion-down': {
+  				from: {
+  					height: '0'
+  				},
+  				to: {
+  					height: 'var(--radix-accordion-content-height)'
+  				}
+  			},
+  			'accordion-up': {
+  				from: {
+  					height: 'var(--radix-accordion-content-height)'
+  				},
+  				to: {
+  					height: '0'
+  				}
+  			}
+  		},
+  		animation: {
+  			'accordion-down': 'accordion-down 0.2s ease-out',
+  			'accordion-up': 'accordion-up 0.2s ease-out'
   		}
   	}
   },
