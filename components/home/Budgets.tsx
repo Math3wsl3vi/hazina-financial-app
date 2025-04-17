@@ -330,12 +330,12 @@ const Budgets: React.FC = () => {
                           <Image src='/images/needs.png' alt='icon' width={20} height={20}/>
                         </div>
                         <div>
-                        <h3 className="font-poppins font-semibold text-lg">{category.title}</h3>
+                        <h3 className="font-poppins font-semibold text-sm">{category.title}</h3>
                         <div className='flex items-center gap-2'>
-                          <p className="text-lg">
+                          <p className="tetx-sm">
                             {category.percentage}%
                           </p>
-                          <p className='text-lg'>
+                          <p className='text-sm'>
                             Ksh {category.allocated.toLocaleString()} 
                           </p>
                         </div>
