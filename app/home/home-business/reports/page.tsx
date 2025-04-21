@@ -10,15 +10,17 @@ interface FinancialRecord {
   id: string;
   type: 'income' | 'expense';
   amount: number;
-  createdAt:Timestamp;
+  createdAt: Timestamp;
+  category?: string; // Added for better expense tracking
 }
 
 interface InvoicingRecord {
   id: string;
   type: 'customer' | 'supplier';
-  unpaidBalance?: number;
-  amountDue?: number;
-  createdAt:Timestamp;
+  amount: number;
+  paidAmount?: number;
+  status?: 'paid' | 'unpaid' | 'partial';
+  createdAt: Timestamp;
 }
 
 interface InventoryRecord {
@@ -26,30 +28,51 @@ interface InventoryRecord {
   type: 'in' | 'out';
   quantity: number;
   price: number;
-  createdAt:Timestamp;
+  itemName: string;
+  createdAt: Timestamp;
 }
 
 interface PayrollRecord {
   id: string;
   salaryAmount: number;
-  createdAt:Timestamp;
+  employeeName: string;
+  createdAt: Timestamp;
 }
 
 interface FinancialSettings {
+  // Fixed Assets
   landAndBuilding: number;
   plantPropertyEquipment: number;
+
+  // Current Assets
+  cashInHand: number;
+  inventory: number;
+  debtors: number;
+
+  // Liabilities
+  creditors: number;
   bankOverdraft: number;
   mortgage: number;
+
+  // Capital
   retainedEarnings: number;
   ownerCapital: number;
+
+  // Profit & Loss
+  incomeFromSales: number;
+  openingInventory: number;
+  purchases: number;
+  closingInventory: number;
+
+  // Operating Expenses
   rent: number;
   transport: number;
+  salaries: number;
   marketing: number;
   generalExpenses: number;
 }
 
 const FinancialReportPage = () => {
-  // State to store fetched records
   const [financialRecords, setFinancialRecords] = useState<FinancialRecord[]>([]);
   const [invoicingRecords, setInvoicingRecords] = useState<InvoicingRecord[]>([]);
   const [inventoryRecords, setInventoryRecords] = useState<InventoryRecord[]>([]);
@@ -57,67 +80,72 @@ const FinancialReportPage = () => {
   const [financialSettings, setFinancialSettings] = useState<FinancialSettings>({
     landAndBuilding: 0,
     plantPropertyEquipment: 0,
+    cashInHand: 0,
+    inventory: 0,
+    debtors: 0,
+    creditors: 0,
     bankOverdraft: 0,
     mortgage: 0,
     retainedEarnings: 0,
     ownerCapital: 0,
+    incomeFromSales: 0,
+    openingInventory: 0,
+    purchases: 0,
+    closingInventory: 0,
     rent: 0,
     transport: 0,
+    salaries: 0,
     marketing: 0,
     generalExpenses: 0,
   });
+  
   const [settingsError, setSettingsError] = useState('');
   const [settingsSuccess, setSettingsSuccess] = useState('');
 
-  // Fetch records from Firestore in real-time
+  // Fetch all records
   useEffect(() => {
-    // Financial Records
     const financialQuery = query(collection(db, 'financialRecords'), orderBy('createdAt', 'desc'));
     const unsubscribeFinancial = onSnapshot(financialQuery, (snapshot) => {
-      const records: FinancialRecord[] = snapshot.docs.map((doc) => ({
+      const records = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       })) as FinancialRecord[];
       setFinancialRecords(records);
-    }, (error) => console.error('Error fetching financial records:', error));
+    });
 
-    // Invoicing Records
     const invoicingQuery = query(collection(db, 'invoicingRecords'), orderBy('createdAt', 'desc'));
     const unsubscribeInvoicing = onSnapshot(invoicingQuery, (snapshot) => {
-      const records: InvoicingRecord[] = snapshot.docs.map((doc) => ({
+      const records = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       })) as InvoicingRecord[];
       setInvoicingRecords(records);
-    }, (error) => console.error('Error fetching invoicing records:', error));
+    });
 
-    // Inventory Records
     const inventoryQuery = query(collection(db, 'inventoryRecords'), orderBy('createdAt', 'desc'));
     const unsubscribeInventory = onSnapshot(inventoryQuery, (snapshot) => {
-      const records: InventoryRecord[] = snapshot.docs.map((doc) => ({
+      const records = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       })) as InventoryRecord[];
       setInventoryRecords(records);
-    }, (error) => console.error('Error fetching inventory records:', error));
+    });
 
-    // Payroll Records
     const payrollQuery = query(collection(db, 'payrollRecords'), orderBy('createdAt', 'desc'));
     const unsubscribePayroll = onSnapshot(payrollQuery, (snapshot) => {
-      const records: PayrollRecord[] = snapshot.docs.map((doc) => ({
+      const records = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       })) as PayrollRecord[];
       setPayrollRecords(records);
-    }, (error) => console.error('Error fetching payroll records:', error));
+    });
 
-    // Financial Settings
     const settingsDocRef = doc(db, 'financialSettings', 'settings');
     const unsubscribeSettings = onSnapshot(settingsDocRef, (doc) => {
       if (doc.exists()) {
         setFinancialSettings(doc.data() as FinancialSettings);
       }
-    }, (error) => console.error('Error fetching financial settings:', error));
+    });
 
     return () => {
       unsubscribeFinancial();
@@ -128,589 +156,588 @@ const FinancialReportPage = () => {
     };
   }, []);
 
-  // Handle form submission for financial settings
+  // Enhanced balance sheet calculation
+  const calculateBalanceSheet = () => {
+    // Calculate Fixed Assets
+    const fixedAssets = {
+      landAndBuilding: financialSettings.landAndBuilding,
+      plantPropertyEquipment: financialSettings.plantPropertyEquipment,
+      total: financialSettings.landAndBuilding + financialSettings.plantPropertyEquipment
+    };
+
+    // Calculate Current Assets
+    const cashBalance = financialRecords.reduce((total, record) => {
+      return record.type === 'income' ? total + record.amount : total - record.amount;
+    }, financialSettings.cashInHand);
+
+    const inventoryValue = inventoryRecords.reduce((total, record) => {
+      const value = record.quantity * record.price;
+      return record.type === 'in' ? total + value : total - value;
+    }, financialSettings.inventory);
+
+    const debtors = invoicingRecords
+      .filter(record => record.type === 'customer' && 
+             (record.status === 'unpaid' || record.status === 'partial'))
+      .reduce((total, record) => {
+        const unpaidAmount = record.amount - (record.paidAmount || 0);
+        return total + unpaidAmount;
+      }, financialSettings.debtors);
+
+    const currentAssets = {
+      cash: cashBalance,
+      inventory: Math.max(0, inventoryValue),
+      debtors: Math.max(0, debtors),
+      total: cashBalance + Math.max(0, inventoryValue) + Math.max(0, debtors)
+    };
+
+    // Calculate Liabilities
+    const creditors = invoicingRecords
+      .filter(record => record.type === 'supplier' && 
+             (record.status === 'unpaid' || record.status === 'partial'))
+      .reduce((total, record) => {
+        const unpaidAmount = record.amount - (record.paidAmount || 0);
+        return total + unpaidAmount;
+      }, financialSettings.creditors);
+
+    const liabilities = {
+      creditors: creditors,
+      bankOverdraft: financialSettings.bankOverdraft,
+      mortgage: financialSettings.mortgage,
+      total: creditors + financialSettings.bankOverdraft + financialSettings.mortgage
+    };
+
+    // Calculate Capital
+    const capital = {
+      retainedEarnings: financialSettings.retainedEarnings,
+      ownerCapital: financialSettings.ownerCapital,
+      total: financialSettings.retainedEarnings + financialSettings.ownerCapital
+    };
+
+    // Totals
+    const totalAssets = fixedAssets.total + currentAssets.total;
+    const totalLiabilitiesAndCapital = liabilities.total + capital.total;
+
+    return {
+      fixedAssets,
+      currentAssets,
+      liabilities,
+      capital,
+      totalAssets,
+      totalLiabilitiesAndCapital,
+      balanceCheck: totalAssets === totalLiabilitiesAndCapital
+    };
+  };
+
+  // Enhanced profit and loss calculation
+  const calculateProfitAndLoss = () => {
+    // Revenue
+    const salesRevenue = inventoryRecords
+      .filter(record => record.type === 'out')
+      .reduce((total, record) => total + (record.quantity * record.price), 0);
+
+    // Cost of Goods Sold
+    const openingInventory = financialSettings.openingInventory;
+    const purchases = inventoryRecords
+      .filter(record => record.type === 'in')
+      .reduce((total, record) => total + (record.quantity * record.price), 0);
+    const closingInventory = inventoryRecords.reduce((total, record) => {
+      const value = record.quantity * record.price;
+      return record.type === 'in' ? total + value : total - value;
+    }, openingInventory + purchases);
+
+    const cogs = openingInventory + purchases - Math.max(0, closingInventory);
+
+    // Gross Profit
+    const grossProfit = salesRevenue - cogs;
+
+    // Operating Expenses
+    const payrollExpenses = payrollRecords.reduce((total, record) => total + record.salaryAmount, 0);
+    const operatingExpenses = {
+      rent: financialSettings.rent,
+      transport: financialSettings.transport,
+      salaries: payrollExpenses,
+      marketing: financialSettings.marketing,
+      generalExpenses: financialSettings.generalExpenses,
+      total: financialSettings.rent + 
+            financialSettings.transport + 
+            payrollExpenses + 
+            financialSettings.marketing + 
+            financialSettings.generalExpenses
+    };
+
+    // Net Profit
+    const netProfit = grossProfit - operatingExpenses.total;
+
+    return {
+      salesRevenue,
+      cogs: {
+        openingInventory,
+        purchases,
+        closingInventory: Math.max(0, closingInventory),
+        total: cogs
+      },
+      grossProfit,
+      operatingExpenses,
+      netProfit
+    };
+  };
+
+  const balanceSheet = calculateBalanceSheet();
+  const profitAndLoss = calculateProfitAndLoss();
+
+  // Handle settings save
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setSettingsError('');
     setSettingsSuccess('');
 
-    const values: FinancialSettings = {
-      landAndBuilding: Number(financialSettings.landAndBuilding),
-      plantPropertyEquipment: Number(financialSettings.plantPropertyEquipment),
-      bankOverdraft: Number(financialSettings.bankOverdraft),
-      mortgage: Number(financialSettings.mortgage),
-      retainedEarnings: Number(financialSettings.retainedEarnings),
-      ownerCapital: Number(financialSettings.ownerCapital),
-      rent: Number(financialSettings.rent),
-      transport: Number(financialSettings.transport),
-      marketing: Number(financialSettings.marketing),
-      generalExpenses: Number(financialSettings.generalExpenses),
-    };
-
-    for (const key in values) {
-      if (isNaN(values[key as keyof FinancialSettings]) || values[key as keyof FinancialSettings] < 0) {
-        setSettingsError('All values must be non-negative numbers');
-        return;
-      }
-    }
-
     try {
-      await setDoc(doc(db, 'financialSettings', 'settings'), values);
-      setSettingsSuccess('Settings saved successfully!');
+      await setDoc(doc(db, 'financialSettings', 'settings'), financialSettings);
+      setSettingsSuccess('Financial settings saved successfully!');
+      setTimeout(() => setSettingsSuccess(''), 3000);
     } catch (error) {
-      setSettingsError('Failed to save settings. Please try again.');
-      console.error('Error saving financial settings:', error);
+      setSettingsError('Failed to save financial settings');
+      console.error('Error saving settings:', error);
     }
   };
 
-  // Calculate Balance Sheet
-  const calculateBalanceSheet = () => {
-    // Fixed Assets
-    const totalFixedAssets = financialSettings.landAndBuilding + financialSettings.plantPropertyEquipment;
-
-    // Current Assets
-    const cash = financialRecords.reduce((sum, record) => {
-      return record.type === 'income' ? sum + record.amount : sum - record.amount;
-    }, 0);
-    const inventoryValue = inventoryRecords.reduce((sum, record) => {
-      const value = record.quantity * record.price;
-      return record.type === 'in' ? sum + value : sum - value;
-    }, 0);
-    const debtors = invoicingRecords
-      .filter((record) => record.type === 'customer')
-      .reduce((sum, record) => sum + (record.unpaidBalance || 0), 0);
-    const totalCurrentAssets = cash + Math.max(inventoryValue, 0) + debtors;
-
-    const totalAssets = totalFixedAssets + totalCurrentAssets;
-
-    // Liabilities
-    const creditors = invoicingRecords
-      .filter((record) => record.type === 'supplier')
-      .reduce((sum, record) => sum + (record.amountDue || 0), 0);
-    const totalLiabilities = creditors + financialSettings.bankOverdraft + financialSettings.mortgage;
-
-    // Capital
-    const totalCapital = financialSettings.retainedEarnings + financialSettings.ownerCapital;
-
-    const totalCapitalAndLiabilities = totalCapital + totalLiabilities;
-
-    return {
-      totalFixedAssets,
-      landAndBuilding: financialSettings.landAndBuilding,
-      plantPropertyEquipment: financialSettings.plantPropertyEquipment,
-      totalCurrentAssets,
-      cash,
-      inventoryValue,
-      debtors,
-      totalAssets,
-      totalLiabilities,
-      creditors,
-      bankOverdraft: financialSettings.bankOverdraft,
-      mortgage: financialSettings.mortgage,
-      totalCapital,
-      retainedEarnings: financialSettings.retainedEarnings,
-      ownerCapital: financialSettings.ownerCapital,
-      totalCapitalAndLiabilities,
-    };
-  };
-
-  // Calculate Profit & Loss
-  const calculateProfitLoss = () => {
-    // Income from Sales
-    const incomeFromSales = inventoryRecords
-      .filter((record) => record.type === 'out')
-      .reduce((sum, record) => sum + record.quantity * record.price, 0);
-
-    // Cost of Sales
-    const openingInventory = 0; // Assume 0 for simplicity
-    const purchases = inventoryRecords
-      .filter((record) => record.type === 'in')
-      .reduce((sum, record) => sum + record.quantity * record.price, 0);
-    const closingInventory = inventoryRecords.reduce((sum, record) => {
-      const value = record.quantity * record.price;
-      return record.type === 'in' ? sum + value : sum - value;
-    }, 0);
-    const costOfSales = openingInventory + purchases - Math.max(closingInventory, 0);
-
-    const grossProfit = incomeFromSales - costOfSales;
-
-    // Operating Expenses
-    const salaries = payrollRecords.reduce((sum, record) => sum + record.salaryAmount, 0);
-    const totalOperatingExpenses =
-      financialSettings.rent +
-      financialSettings.transport +
-      salaries +
-      financialSettings.marketing +
-      financialSettings.generalExpenses;
-
-    const netProfit = grossProfit - totalOperatingExpenses;
-
-    return {
-      incomeFromSales,
-      costOfSales,
-      openingInventory,
-      purchases,
-      closingInventory,
-      grossProfit,
-      totalOperatingExpenses,
-      rent: financialSettings.rent,
-      transport: financialSettings.transport,
-      salaries,
-      marketing: financialSettings.marketing,
-      generalExpenses: financialSettings.generalExpenses,
-      netProfit,
-    };
-  };
-
-  const balanceSheet = calculateBalanceSheet();
-  const profitLoss = calculateProfitLoss();
-
+  // Render UI
   return (
-    <div className="p-5 max-w-2xl mx-auto font-poppins">
-      {/* Financial Settings Form */}
-      <div className="mb-8">
-        <h2 className="font-poppins text-xl font-semibold mb-4">Financial Settings</h2>
-        <form onSubmit={handleSaveSettings} className="space-y-4">
-          <h3 className="font-poppins text-lg font-medium mb-2">Balance Sheet</h3>
-          <h3 className="font-poppins text-lg font-medium mb-1">Assets</h3>
-          <h3 className="font-poppins text-sm font-medium mb-1">Fixed Assets</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="p-5 max-w-4xl mx-auto font-poppins">
+      {/* Settings Form */}
+      <div className="mb-8 bg-white p-6 rounded-lg shadow">
+        <h2 className="text-xl font-semibold mb-4">Financial Settings</h2>
+        <form onSubmit={handleSaveSettings} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Fixed Assets */}
+          <div className="space-y-2">
+            <h3 className="font-medium">Fixed Assets</h3>
             <div>
-              <Label htmlFor="landAndBuilding" className="block text-sm font-medium">
-                Land & Building
-              </Label>
+              <Label>Land & Building</Label>
               <Input
-                id="landAndBuilding"
                 type="number"
-                step="1"
-                min="0"
                 value={financialSettings.landAndBuilding}
-                onChange={(e) =>
-                  setFinancialSettings({
-                    ...financialSettings,
-                    landAndBuilding: Number(e.target.value),
-                  })
-                }
-                className="w-full"
-                placeholder="Enter value"
+                onChange={(e) => setFinancialSettings({
+                  ...financialSettings,
+                  landAndBuilding: Number(e.target.value)
+                })}
               />
             </div>
             <div>
-              <Label htmlFor="plantPropertyEquipment" className="block text-sm font-medium">
-                Plant, Property & Equipment
-              </Label>
+              <Label>Plant, Property & Equipment</Label>
               <Input
-                id="plantPropertyEquipment"
                 type="number"
-                step="1"
-                min="0"
                 value={financialSettings.plantPropertyEquipment}
-                onChange={(e) =>
-                  setFinancialSettings({
-                    ...financialSettings,
-                    plantPropertyEquipment: Number(e.target.value),
-                  })
-                }
-                className="w-full"
-                placeholder="Enter value"
+                onChange={(e) => setFinancialSettings({
+                  ...financialSettings,
+                  plantPropertyEquipment: Number(e.target.value)
+                })}
               />
             </div>
+          </div>
 
-            {/* current assets */}
-          <h3 className="font-poppins text-sm font-medium mb-2">Current Assets</h3>
-          <div>
-              <Label htmlFor="bankOverdraft" className="block text-sm font-medium">
-                Cash in hand and at Bank
-              </Label>
-              <Input
-                id="bankOverdraft"
-                type="number"
-                step="1"
-                min="0"
-                value={financialSettings.bankOverdraft}
-                onChange={(e) =>
-                  setFinancialSettings({
-                    ...financialSettings,
-                    bankOverdraft: Number(e.target.value),
-                  })
-                }
-                className="w-full"
-                placeholder="Enter value"
-              />
-            </div>
-
+          {/* Current Assets */}
+          <div className="space-y-2">
+            <h3 className="font-medium">Current Assets</h3>
             <div>
-              <Label htmlFor="bankOverdraft" className="block text-sm font-medium">
-                Inventory
-              </Label>
+              <Label>Cash in Hand</Label>
               <Input
-                id="bankOverdraft"
                 type="number"
-                step="1"
-                min="0"
-                value={financialSettings.bankOverdraft}
-                onChange={(e) =>
-                  setFinancialSettings({
-                    ...financialSettings,
-                    bankOverdraft: Number(e.target.value),
-                  })
-                }
-                className="w-full"
-                placeholder="Enter value"
+                value={financialSettings.cashInHand}
+                onChange={(e) => setFinancialSettings({
+                  ...financialSettings,
+                  cashInHand: Number(e.target.value)
+                })}
               />
             </div>
             <div>
-              <Label htmlFor="mortgage" className="block text-sm font-medium">
-                Debtors
-              </Label>
+              <Label>Inventory</Label>
               <Input
-                id="mortgage"
                 type="number"
-                step="1"
-                min="0"
+                value={financialSettings.inventory}
+                onChange={(e) => setFinancialSettings({
+                  ...financialSettings,
+                  inventory: Number(e.target.value)
+                })}
+              />
+            </div>
+            <div>
+              <Label>Debtors</Label>
+              <Input
+                type="number"
+                value={financialSettings.debtors}
+                onChange={(e) => setFinancialSettings({
+                  ...financialSettings,
+                  debtors: Number(e.target.value)
+                })}
+              />
+            </div>
+          </div>
+
+          {/* Liabilities */}
+          <div className="space-y-2">
+            <h3 className="font-medium">Liabilities</h3>
+            <div>
+              <Label>Creditors</Label>
+              <Input
+                type="number"
+                value={financialSettings.creditors}
+                onChange={(e) => setFinancialSettings({
+                  ...financialSettings,
+                  creditors: Number(e.target.value)
+                })}
+              />
+            </div>
+            <div>
+              <Label>Bank Overdraft</Label>
+              <Input
+                type="number"
+                value={financialSettings.bankOverdraft}
+                onChange={(e) => setFinancialSettings({
+                  ...financialSettings,
+                  bankOverdraft: Number(e.target.value)
+                })}
+              />
+            </div>
+            <div>
+              <Label>Mortgage</Label>
+              <Input
+                type="number"
                 value={financialSettings.mortgage}
-                onChange={(e) =>
-                  setFinancialSettings({
-                    ...financialSettings,
-                    mortgage: Number(e.target.value),
-                  })
-                }
-                className="w-full"
-                placeholder="Enter value"
+                onChange={(e) => setFinancialSettings({
+                  ...financialSettings,
+                  mortgage: Number(e.target.value)
+                })}
               />
             </div>
+          </div>
 
-            {/* liabilities */}
-          <h3 className="font-poppins text-lg font-medium mb-2">Liabilities</h3>
-
+          {/* Capital */}
+          <div className="space-y-2">
+            <h3 className="font-medium">Capital</h3>
             <div>
-              <Label htmlFor="retainedEarnings" className="block text-sm font-medium">
-                Creditors
-              </Label>
+              <Label>Retained Earnings</Label>
               <Input
-                id="retainedEarnings"
                 type="number"
-                step="1"
-                min="0"
                 value={financialSettings.retainedEarnings}
-                onChange={(e) =>
-                  setFinancialSettings({
-                    ...financialSettings,
-                    retainedEarnings: Number(e.target.value),
-                  })
-                }
-                className="w-full"
-                placeholder="Enter value"
+                onChange={(e) => setFinancialSettings({
+                  ...financialSettings,
+                  retainedEarnings: Number(e.target.value)
+                })}
               />
             </div>
             <div>
-              <Label htmlFor="ownerCapital" className="block text-sm font-medium">
-                Bank Overdraft
-              </Label>
+              <Label>Owner Capital</Label>
               <Input
-                id="ownerCapital"
                 type="number"
-                step="1"
-                min="0"
                 value={financialSettings.ownerCapital}
-                onChange={(e) =>
-                  setFinancialSettings({
-                    ...financialSettings,
-                    ownerCapital: Number(e.target.value),
-                  })
-                }
-                className="w-full"
-                placeholder="Enter value"
-              />
-            </div>
-            <div>
-              <Label htmlFor="rent" className="block text-sm font-medium">
-                Mortgage
-              </Label>
-              <Input
-                id="rent"
-                type="number"
-                step="1"
-                min="0"
-                value={financialSettings.rent}
-                onChange={(e) =>
-                  setFinancialSettings({
-                    ...financialSettings,
-                    rent: Number(e.target.value),
-                  })
-                }
-                className="w-full"
-                placeholder="Enter value"
-              />
-            </div>
-            {/* capital */}
-          <h3 className="font-poppins text-lg font-medium mb-2">Capital</h3>
-            <div>
-              <Label htmlFor="rent" className="block text-sm font-medium">
-                Retained Earnings
-              </Label>
-              <Input
-                id="rent"
-                type="number"
-                step="1"
-                min="0"
-                value={financialSettings.rent}
-                onChange={(e) =>
-                  setFinancialSettings({
-                    ...financialSettings,
-                    rent: Number(e.target.value),
-                  })
-                }
-                className="w-full"
-                placeholder="Enter value"
-              />
-            </div>
-            <div>
-              <Label htmlFor="marketing" className="block text-sm font-medium">
-                Owner Capital
-              </Label>
-              <Input
-                id="marketing"
-                type="number"
-                step="1"
-                min="0"
-                value={financialSettings.marketing}
-                onChange={(e) =>
-                  setFinancialSettings({
-                    ...financialSettings,
-                    marketing: Number(e.target.value),
-                  })
-                }
-                className="w-full"
-                placeholder="Enter value"
+                onChange={(e) => setFinancialSettings({
+                  ...financialSettings,
+                  ownerCapital: Number(e.target.value)
+                })}
               />
             </div>
           </div>
 
-          <h3 className="font-poppins text-lg font-medium mb-2 mt-4">Profit and Loss Report</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Profit & Loss */}
+          <div className="space-y-2">
+            <h3 className="font-medium">Profit & Loss</h3>
             <div>
-              <Label htmlFor="rent" className="block text-sm font-medium">
-                Income from Sales
-              </Label>
+              <Label>Opening Inventory</Label>
               <Input
-                id="rent"
                 type="number"
-                step="1"
-                min="0"
-                value={financialSettings.rent}
-                onChange={(e) =>
-                  setFinancialSettings({
-                    ...financialSettings,
-                    rent: Number(e.target.value),
-                  })
-                }
-                className="w-full"
-                placeholder="Enter value"
+                value={financialSettings.openingInventory}
+                onChange={(e) => setFinancialSettings({
+                  ...financialSettings,
+                  openingInventory: Number(e.target.value)
+                })}
               />
             </div>
             <div>
-              <Label htmlFor="marketing" className="block text-sm font-medium">
-                Owner Capital
-              </Label>
+              <Label>Purchases</Label>
               <Input
-                id="marketing"
                 type="number"
-                step="1"
-                min="0"
-                value={financialSettings.marketing}
-                onChange={(e) =>
-                  setFinancialSettings({
-                    ...financialSettings,
-                    marketing: Number(e.target.value),
-                  })
-                }
-                className="w-full"
-                placeholder="Enter value"
+                value={financialSettings.purchases}
+                onChange={(e) => setFinancialSettings({
+                  ...financialSettings,
+                  purchases: Number(e.target.value)
+                })}
               />
             </div>
             <div>
-              <Label htmlFor="generalExpenses" className="block text-sm font-medium">
-                General Expenses
-              </Label>
+              <Label>Closing Inventory</Label>
               <Input
-                id="generalExpenses"
                 type="number"
-                step="1"
-                min="0"
-                value={financialSettings.generalExpenses}
-                onChange={(e) =>
-                  setFinancialSettings({
-                    ...financialSettings,
-                    generalExpenses: Number(e.target.value),
-                  })
-                }
-                className="w-full"
-                placeholder="Enter value"
+                value={financialSettings.closingInventory}
+                onChange={(e) => setFinancialSettings({
+                  ...financialSettings,
+                  closingInventory: Number(e.target.value)
+                })}
               />
             </div>
           </div>
-          {settingsError && <p className="text-xs text-red-500">{settingsError}</p>}
-          {settingsSuccess && <p className="text-xs text-green-500">{settingsSuccess}</p>}
-          <Button type="submit" className="w-full">Save Settings</Button>
+
+          {/* Operating Expenses */}
+          <div className="space-y-2">
+            <h3 className="font-medium">Operating Expenses</h3>
+            <div>
+              <Label>Rent</Label>
+              <Input
+                type="number"
+                value={financialSettings.rent}
+                onChange={(e) => setFinancialSettings({
+                  ...financialSettings,
+                  rent: Number(e.target.value)
+                })}
+              />
+            </div>
+            <div>
+              <Label>Transport</Label>
+              <Input
+                type="number"
+                value={financialSettings.transport}
+                onChange={(e) => setFinancialSettings({
+                  ...financialSettings,
+                  transport: Number(e.target.value)
+                })}
+              />
+            </div>
+            <div>
+              <Label>Salaries</Label>
+              <Input
+                type="number"
+                value={financialSettings.salaries}
+                onChange={(e) => setFinancialSettings({
+                  ...financialSettings,
+                  salaries: Number(e.target.value)
+                })}
+              />
+            </div>
+            <div>
+              <Label>Marketing</Label>
+              <Input
+                type="number"
+                value={financialSettings.marketing}
+                onChange={(e) => setFinancialSettings({
+                  ...financialSettings,
+                  marketing: Number(e.target.value)
+                })}
+              />
+            </div>
+            <div>
+              <Label>General Expenses</Label>
+              <Input
+                type="number"
+                value={financialSettings.generalExpenses}
+                onChange={(e) => setFinancialSettings({
+                  ...financialSettings,
+                  generalExpenses: Number(e.target.value)
+                })}
+              />
+            </div>
+          </div>
+
+          <div className="md:col-span-2">
+            {settingsError && <p className="text-red-500 text-sm">{settingsError}</p>}
+            {settingsSuccess && <p className="text-green-500 text-sm">{settingsSuccess}</p>}
+            <Button type="submit" className="w-full mt-4">Save Settings</Button>
+          </div>
         </form>
       </div>
 
-      {/* Balance Sheet Section */}
-      <div className="mb-8">
-        <h2 className="font-poppins text-xl font-semibold mb-4">Balance Sheet</h2>
-        <h3 className="font-poppins text-lg font-medium mb-2">Assets</h3>
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>Fixed Assets</span>
-            <span></span>
-          </div>
-          <div className="flex justify-between text-sm pl-4">
-            <span>Land & Building</span>
-            <span>KES {balanceSheet.landAndBuilding.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm pl-4">
-            <span>Plant, Property & Equipment</span>
-            <span>KES {balanceSheet.plantPropertyEquipment.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm font-semibold">
-            <span>Total Fixed Assets</span>
-            <span>KES {balanceSheet.totalFixedAssets.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm mt-2">
-            <span>Current Assets</span>
-            <span></span>
-          </div>
-          <div className="flex justify-between text-sm pl-4">
-            <span>Cash in Hand & at Bank</span>
-            <span>KES {balanceSheet.cash.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm pl-4">
-            <span>Inventory</span>
-            <span>KES {Math.max(balanceSheet.inventoryValue, 0).toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm pl-4">
-            <span>Debtors</span>
-            <span>KES {balanceSheet.debtors.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm font-semibold">
-            <span>Total Current Assets</span>
-            <span>KES {balanceSheet.totalCurrentAssets.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm font-bold mt-2">
-            <span>Total Assets</span>
-            <span>KES {balanceSheet.totalAssets.toFixed(2)}</span>
-          </div>
-        </div>
+      {/* Balance Sheet Report */}
+      <div className="mb-8 bg-white p-6 rounded-lg shadow">
+        <h2 className="text-xl font-semibold mb-4">Balance Sheet</h2>
+        <div className="space-y-4">
+          {/* Assets */}
+          <div>
+            <h3 className="font-medium text-lg mb-2">Assets</h3>
+            <div className="pl-4 space-y-2">
+              <div className="flex justify-between">
+                <span className="font-medium">Fixed Assets:</span>
+                <span></span>
+              </div>
+              <div className="flex justify-between pl-4">
+                <span>Land & Building</span>
+                <span>KES {balanceSheet.fixedAssets.landAndBuilding.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between pl-4">
+                <span>Plant, Property & Equipment</span>
+                <span>KES {balanceSheet.fixedAssets.plantPropertyEquipment.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between font-medium border-t pt-1">
+                <span>Total Fixed Assets</span>
+                <span>KES {balanceSheet.fixedAssets.total.toLocaleString()}</span>
+              </div>
 
-        <h3 className="font-poppins text-lg font-medium mb-2 mt-4">Liabilities</h3>
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm pl-4">
-            <span>Creditors</span>
-            <span>KES {balanceSheet.creditors.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm pl-4">
-            <span>Bank Overdraft</span>
-            <span>KES {balanceSheet.bankOverdraft.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm pl-4">
-            <span>Mortgage</span>
-            <span>KES {balanceSheet.mortgage.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm font-semibold">
-            <span>Total Liabilities</span>
-            <span>KES {balanceSheet.totalLiabilities.toFixed(2)}</span>
-          </div>
-        </div>
+              <div className="flex justify-between mt-2">
+                <span className="font-medium">Current Assets:</span>
+                <span></span>
+              </div>
+              <div className="flex justify-between pl-4">
+                <span>Cash & Bank</span>
+                <span>KES {balanceSheet.currentAssets.cash.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between pl-4">
+                <span>Inventory</span>
+                <span>KES {balanceSheet.currentAssets.inventory.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between pl-4">
+                <span>Accounts Receivable</span>
+                <span>KES {balanceSheet.currentAssets.debtors.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between font-medium border-t pt-1">
+                <span>Total Current Assets</span>
+                <span>KES {balanceSheet.currentAssets.total.toLocaleString()}</span>
+              </div>
 
-        <h3 className="font-poppins text-lg font-medium mb-2 mt-4">Capital</h3>
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm pl-4">
-            <span>Retained Earnings</span>
-            <span>KES {balanceSheet.retainedEarnings.toFixed(2)}</span>
+              <div className="flex justify-between font-bold text-lg border-t-2 pt-2 mt-2">
+                <span>TOTAL ASSETS</span>
+                <span>KES {balanceSheet.totalAssets.toLocaleString()}</span>
+              </div>
+            </div>
           </div>
-          <div className="flex justify-between text-sm pl-4">
-            <span>Owner Capital</span>
-            <span>KES {balanceSheet.ownerCapital.toFixed(2)}</span>
+
+          {/* Liabilities & Capital */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Liabilities */}
+            <div>
+              <h3 className="font-medium text-lg mb-2">Liabilities</h3>
+              <div className="pl-4 space-y-2">
+                <div className="flex justify-between pl-4">
+                  <span>Accounts Payable</span>
+                  <span>KES {balanceSheet.liabilities.creditors.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between pl-4">
+                  <span>Bank Overdraft</span>
+                  <span>KES {balanceSheet.liabilities.bankOverdraft.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between pl-4">
+                  <span>Mortgage</span>
+                  <span>KES {balanceSheet.liabilities.mortgage.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between font-medium border-t pt-1">
+                  <span>Total Liabilities</span>
+                  <span>KES {balanceSheet.liabilities.total.toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Capital */}
+            <div>
+              <h3 className="font-medium text-lg mb-2">Capital</h3>
+              <div className="pl-4 space-y-2">
+                <div className="flex justify-between pl-4">
+                  <span>Retained Earnings</span>
+                  <span>KES {balanceSheet.capital.retainedEarnings.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between pl-4">
+                  <span>{"Owner's"} Capital</span>
+                  <span>KES {balanceSheet.capital.ownerCapital.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between font-medium border-t pt-1">
+                  <span>Total Capital</span>
+                  <span>KES {balanceSheet.capital.total.toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="flex justify-between text-sm font-semibold">
-            <span>Total Capital</span>
-            <span>KES {balanceSheet.totalCapital.toFixed(2)}</span>
+
+          <div className="flex justify-between font-bold text-lg border-t-2 pt-2">
+            <span>TOTAL LIABILITIES & CAPITAL</span>
+            <span>KES {balanceSheet.totalLiabilitiesAndCapital.toLocaleString()}</span>
           </div>
-          <div className="flex justify-between text-sm font-bold mt-2">
-            <span>Total Capital & Liabilities</span>
-            <span>KES {balanceSheet.totalCapitalAndLiabilities.toFixed(2)}</span>
-          </div>
+
+          {!balanceSheet.balanceCheck && (
+            <div className="text-red-500 text-sm mt-2">
+              Warning: Assets do not equal Liabilities + Capital. Please check your entries.
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Profit & Loss Report Section */}
-      <div>
-        <h2 className="font-poppins text-xl font-semibold mb-4">Profit & Loss Report</h2>
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>Income from Sales</span>
-            <span>KES {profitLoss.incomeFromSales.toFixed(2)}</span>
+      {/* Profit & Loss Report */}
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h2 className="text-xl font-semibold mb-4">Profit & Loss Statement</h2>
+        <div className="space-y-4">
+          {/* Revenue */}
+          <div className="flex justify-between">
+            <span className="font-medium">Sales Revenue</span>
+            <span>KES {profitAndLoss.salesRevenue.toLocaleString()}</span>
           </div>
-          <div className="flex justify-between text-sm">
-            <span>Less: Cost of Sales</span>
-            <span></span>
+
+          {/* Cost of Goods Sold */}
+          <div className="pl-4 space-y-2">
+            <div className="flex justify-between">
+              <span>Less: Cost of Goods Sold</span>
+              <span></span>
+            </div>
+            <div className="flex justify-between pl-4">
+              <span>Opening Inventory</span>
+              <span>KES {profitAndLoss.cogs.openingInventory.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between pl-4">
+              <span>Add: Purchases</span>
+              <span>KES {profitAndLoss.cogs.purchases.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between pl-4">
+              <span>Less: Closing Inventory</span>
+              <span>KES {profitAndLoss.cogs.closingInventory.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between font-medium border-t pt-1">
+              <span>Total Cost of Goods Sold</span>
+              <span>KES {profitAndLoss.cogs.total.toLocaleString()}</span>
+            </div>
           </div>
-          <div className="flex justify-between text-sm pl-4">
-            <span>Opening Inventory</span>
-            <span>KES {profitLoss.openingInventory.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm pl-4">
-            <span>Purchases</span>
-            <span>KES {profitLoss.purchases.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm pl-4">
-            <span>Less: Closing Inventory</span>
-            <span>KES {Math.max(profitLoss.closingInventory, 0).toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm font-semibold">
-            <span>Cost of Sales</span>
-            <span>KES {profitLoss.costOfSales.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm font-bold">
+
+          {/* Gross Profit */}
+          <div className="flex justify-between font-medium border-t pt-2">
             <span>Gross Profit</span>
-            <span>KES {profitLoss.grossProfit.toFixed(2)}</span>
+            <span>KES {profitAndLoss.grossProfit.toLocaleString()}</span>
           </div>
-          <div className="flex justify-between text-sm mt-2">
-            <span>Less: Operating Expenses</span>
-            <span></span>
+
+          {/* Operating Expenses */}
+          <div className="pl-4 space-y-2">
+            <div className="flex justify-between">
+              <span>Less: Operating Expenses</span>
+              <span></span>
+            </div>
+            <div className="flex justify-between pl-4">
+              <span>Rent</span>
+              <span>KES {profitAndLoss.operatingExpenses.rent.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between pl-4">
+              <span>Transport</span>
+              <span>KES {profitAndLoss.operatingExpenses.transport.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between pl-4">
+              <span>Salaries</span>
+              <span>KES {profitAndLoss.operatingExpenses.salaries.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between pl-4">
+              <span>Marketing</span>
+              <span>KES {profitAndLoss.operatingExpenses.marketing.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between pl-4">
+              <span>General Expenses</span>
+              <span>KES {profitAndLoss.operatingExpenses.generalExpenses.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between font-medium border-t pt-1">
+              <span>Total Operating Expenses</span>
+              <span>KES {profitAndLoss.operatingExpenses.total.toLocaleString()}</span>
+            </div>
           </div>
-          <div className="flex justify-between text-sm pl-4">
-            <span>Rent</span>
-            <span>KES {profitLoss.rent.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm pl-4">
-            <span>Transport</span>
-            <span>KES {profitLoss.transport.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm pl-4">
-            <span>Salaries</span>
-            <span>KES {profitLoss.salaries.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm pl-4">
-            <span>Marketing</span>
-            <span>KES {profitLoss.marketing.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm pl-4">
-            <span>General Expenses</span>
-            <span>KES {profitLoss.generalExpenses.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm font-semibold">
-            <span>Total Operating Expenses</span>
-            <span>KES {profitLoss.totalOperatingExpenses.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-sm font-bold mt-2">
-            <span>Net Profit</span>
-            <span>KES {profitLoss.netProfit.toFixed(2)}</span>
+
+          {/* Net Profit */}
+          <div className="flex justify-between font-bold text-lg border-t-2 pt-2">
+            <span>NET PROFIT</span>
+            <span className={profitAndLoss.netProfit >= 0 ? 'text-green-600' : 'text-red-600'}>
+              KES {profitAndLoss.netProfit.toLocaleString()}
+            </span>
           </div>
         </div>
       </div>
-      <div className='h-[105px]'></div>
+
+      <div className="h-20"></div>
     </div>
   );
 };
