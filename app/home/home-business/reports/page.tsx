@@ -271,7 +271,9 @@ const FinancialReportPage = () => {
       <div className="mb-8">
         <h2 className="font-poppins text-xl font-semibold mb-4">Financial Settings</h2>
         <form onSubmit={handleSaveSettings} className="space-y-4">
-          <h3 className="font-poppins text-lg font-medium mb-2">Balance Sheet Inputs</h3>
+          <h3 className="font-poppins text-lg font-medium mb-2">Balance Sheet</h3>
+          <h3 className="font-poppins text-lg font-medium mb-1">Assets</h3>
+          <h3 className="font-poppins text-sm font-medium mb-1">Fixed Assets</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="landAndBuilding" className="block text-sm font-medium">
@@ -280,7 +282,7 @@ const FinancialReportPage = () => {
               <Input
                 id="landAndBuilding"
                 type="number"
-                step="0.01"
+                step="1"
                 min="0"
                 value={financialSettings.landAndBuilding}
                 onChange={(e) =>
@@ -300,7 +302,7 @@ const FinancialReportPage = () => {
               <Input
                 id="plantPropertyEquipment"
                 type="number"
-                step="0.01"
+                step="1"
                 min="0"
                 value={financialSettings.plantPropertyEquipment}
                 onChange={(e) =>
@@ -313,14 +315,38 @@ const FinancialReportPage = () => {
                 placeholder="Enter value"
               />
             </div>
-            <div>
+
+            {/* current assets */}
+          <h3 className="font-poppins text-sm font-medium mb-2">Current Assets</h3>
+          <div>
               <Label htmlFor="bankOverdraft" className="block text-sm font-medium">
-                Bank Overdraft
+                Cash in hand and at Bank
               </Label>
               <Input
                 id="bankOverdraft"
                 type="number"
-                step="0.01"
+                step="1"
+                min="0"
+                value={financialSettings.bankOverdraft}
+                onChange={(e) =>
+                  setFinancialSettings({
+                    ...financialSettings,
+                    bankOverdraft: Number(e.target.value),
+                  })
+                }
+                className="w-full"
+                placeholder="Enter value"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="bankOverdraft" className="block text-sm font-medium">
+                Inventory
+              </Label>
+              <Input
+                id="bankOverdraft"
+                type="number"
+                step="1"
                 min="0"
                 value={financialSettings.bankOverdraft}
                 onChange={(e) =>
@@ -335,12 +361,12 @@ const FinancialReportPage = () => {
             </div>
             <div>
               <Label htmlFor="mortgage" className="block text-sm font-medium">
-                Mortgage
+                Debtors
               </Label>
               <Input
                 id="mortgage"
                 type="number"
-                step="0.01"
+                step="1"
                 min="0"
                 value={financialSettings.mortgage}
                 onChange={(e) =>
@@ -353,14 +379,18 @@ const FinancialReportPage = () => {
                 placeholder="Enter value"
               />
             </div>
+
+            {/* liabilities */}
+          <h3 className="font-poppins text-lg font-medium mb-2">Liabilities</h3>
+
             <div>
               <Label htmlFor="retainedEarnings" className="block text-sm font-medium">
-                Retained Earnings
+                Creditors
               </Label>
               <Input
                 id="retainedEarnings"
                 type="number"
-                step="0.01"
+                step="1"
                 min="0"
                 value={financialSettings.retainedEarnings}
                 onChange={(e) =>
@@ -375,12 +405,12 @@ const FinancialReportPage = () => {
             </div>
             <div>
               <Label htmlFor="ownerCapital" className="block text-sm font-medium">
-                Owner Capital
+                Bank Overdraft
               </Label>
               <Input
                 id="ownerCapital"
                 type="number"
-                step="0.01"
+                step="1"
                 min="0"
                 value={financialSettings.ownerCapital}
                 onChange={(e) =>
@@ -393,18 +423,36 @@ const FinancialReportPage = () => {
                 placeholder="Enter value"
               />
             </div>
-          </div>
-
-          <h3 className="font-poppins text-lg font-medium mb-2 mt-4">Profit & Loss Inputs</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="rent" className="block text-sm font-medium">
-                Rent
+                Mortgage
               </Label>
               <Input
                 id="rent"
                 type="number"
-                step="0.01"
+                step="1"
+                min="0"
+                value={financialSettings.rent}
+                onChange={(e) =>
+                  setFinancialSettings({
+                    ...financialSettings,
+                    rent: Number(e.target.value),
+                  })
+                }
+                className="w-full"
+                placeholder="Enter value"
+              />
+            </div>
+            {/* capital */}
+          <h3 className="font-poppins text-lg font-medium mb-2">Capital</h3>
+            <div>
+              <Label htmlFor="rent" className="block text-sm font-medium">
+                Retained Earnings
+              </Label>
+              <Input
+                id="rent"
+                type="number"
+                step="1"
                 min="0"
                 value={financialSettings.rent}
                 onChange={(e) =>
@@ -418,19 +466,43 @@ const FinancialReportPage = () => {
               />
             </div>
             <div>
-              <Label htmlFor="transport" className="block text-sm font-medium">
-                Transport
+              <Label htmlFor="marketing" className="block text-sm font-medium">
+                Owner Capital
               </Label>
               <Input
-                id="transport"
+                id="marketing"
                 type="number"
-                step="0.01"
+                step="1"
                 min="0"
-                value={financialSettings.transport}
+                value={financialSettings.marketing}
                 onChange={(e) =>
                   setFinancialSettings({
                     ...financialSettings,
-                    transport: Number(e.target.value),
+                    marketing: Number(e.target.value),
+                  })
+                }
+                className="w-full"
+                placeholder="Enter value"
+              />
+            </div>
+          </div>
+
+          <h3 className="font-poppins text-lg font-medium mb-2 mt-4">Profit and Loss Report</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="rent" className="block text-sm font-medium">
+                Income from Sales
+              </Label>
+              <Input
+                id="rent"
+                type="number"
+                step="1"
+                min="0"
+                value={financialSettings.rent}
+                onChange={(e) =>
+                  setFinancialSettings({
+                    ...financialSettings,
+                    rent: Number(e.target.value),
                   })
                 }
                 className="w-full"
@@ -439,12 +511,12 @@ const FinancialReportPage = () => {
             </div>
             <div>
               <Label htmlFor="marketing" className="block text-sm font-medium">
-                Marketing
+                Owner Capital
               </Label>
               <Input
                 id="marketing"
                 type="number"
-                step="0.01"
+                step="1"
                 min="0"
                 value={financialSettings.marketing}
                 onChange={(e) =>
@@ -464,7 +536,7 @@ const FinancialReportPage = () => {
               <Input
                 id="generalExpenses"
                 type="number"
-                step="0.01"
+                step="1"
                 min="0"
                 value={financialSettings.generalExpenses}
                 onChange={(e) =>
