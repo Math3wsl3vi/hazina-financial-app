@@ -178,7 +178,7 @@ const TrackerPage = () => {
               {incomeRecords.map((record) => (
                 <li
                   key={record.id}
-                  className="flex justify-between p-2 bg-gray-100 rounded-md"
+                  className="flex justify-between p-2 bg-green-50 rounded-md"
                 >
                   <span className="text-sm">{record.note}</span>
                   <span className="text-sm font-semibold">
@@ -244,7 +244,7 @@ const TrackerPage = () => {
               {expenseRecords.map((record) => (
                 <li
                   key={record.id}
-                  className="flex justify-between p-2 bg-gray-100 rounded-md"
+                  className="flex justify-between p-2 bg-red-50 rounded-md"
                 >
                   <span className="text-sm">{record.note}</span>
                   <span className="text-sm font-semibold">

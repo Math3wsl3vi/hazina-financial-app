@@ -307,7 +307,7 @@ const InvoicingPage = () => {
                 {customerRecords.map((record) => (
                   <li
                     key={record.id}
-                    className="flex flex-col p-2 bg-gray-100 rounded-md text-sm"
+                    className="flex flex-col p-2 bg-green-50 rounded-md text-sm"
                   >
                     <div className="flex justify-between">
                       <span>{record.name}</span>
@@ -442,7 +442,7 @@ const InvoicingPage = () => {
                 {supplierRecords.map((record) => (
                   <li
                     key={record.id}
-                    className="flex flex-col p-2 bg-gray-100 rounded-md text-sm"
+                    className="flex flex-col p-2 bg-red-50 rounded-md text-sm"
                   >
                     <div className="flex justify-between">
                       <span>{record.name}</span>
