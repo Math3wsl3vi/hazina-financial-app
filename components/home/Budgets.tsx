@@ -390,7 +390,7 @@ const Budgets: React.FC = () => {
                 >
                   <AccordionTrigger className="flex justify-between items-center w-full [&>div]:w-full">
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${styles.bgColor} ${styles.borderColor} border-2`}>
+                      <div className={`w-12 h-10 rounded-full flex items-center justify-center ${styles.bgColor} ${styles.borderColor} border-2`}>
                         <Image src='/images/needs.png' alt='icon' width={20} height={20}/>
                       </div>
                       <div className=' w-full'>
@@ -408,11 +408,11 @@ const Budgets: React.FC = () => {
                             <Trash2 size={16} />
                           </Button>
                         </div>
-                        <div className='flex items-center gap-2'>
+                        <div className='flex flex-col'>
                           <p className="text-sm">
                             {category.percentage}%
                           </p>
-                          <p className='text-sm '>
+                          <p className='text-sm'>
                             Ksh {category.allocated.toLocaleString()}
                           </p>
                         </div>
