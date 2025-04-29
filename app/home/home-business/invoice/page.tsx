@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, Timestamp, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '@/configs/firebaseConfig';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -14,14 +14,13 @@ interface InvoicingRecord {
   quantity: number;
   dueDate: string;
   pricePerItem: number;
-  unpaidBalance?: number; // For customers
-  amountToBePaid?: number; // For suppliers
-  amountDue?: number; // For suppliers
+  unpaidBalance?: number;
+  amountToBePaid?: number;
+  amountDue?: number;
   createdAt: Timestamp
 }
 
 const InvoicingPage = () => {
-  // State for Customer form
   const [customerName, setCustomerName] = useState('');
   const [customerProductService, setCustomerProductService] = useState('');
   const [customerQuantity, setCustomerQuantity] = useState('');
@@ -31,7 +30,6 @@ const InvoicingPage = () => {
   const [customerError, setCustomerError] = useState('');
   const [customerSuccess, setCustomerSuccess] = useState('');
 
-  // State for Supplier form
   const [supplierName, setSupplierName] = useState('');
   const [supplierProductService, setSupplierProductService] = useState('');
   const [supplierQuantity, setSupplierQuantity] = useState('');
@@ -41,12 +39,9 @@ const InvoicingPage = () => {
   const [supplierError, setSupplierError] = useState('');
   const [supplierSuccess, setSupplierSuccess] = useState('');
 
-
-  // State to store fetched records
   const [customerRecords, setCustomerRecords] = useState<InvoicingRecord[]>([]);
   const [supplierRecords, setSupplierRecords] = useState<InvoicingRecord[]>([]);
 
-  // Fetch records from Firestore in real-time
   useEffect(() => {
     const invoicingQuery = query(
       collection(db, 'invoicingRecords'),
@@ -68,11 +63,9 @@ const InvoicingPage = () => {
     return () => unsubscribe();
   }, []);
 
-  // Calculate totals
   const customerTotal = customerRecords.reduce((sum, record) => sum + (record.unpaidBalance || 0), 0);
   const supplierTotal = supplierRecords.reduce((sum, record) => sum + (record.amountDue || 0), 0);
 
-  // Function to handle adding customer
   const handleAddCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
     setCustomerError('');
@@ -131,7 +124,6 @@ const InvoicingPage = () => {
     }
   };
 
-  // Function to handle adding supplier
   const handleAddSupplier = async (e: React.FormEvent) => {
     e.preventDefault();
     setSupplierError('');
@@ -195,9 +187,16 @@ const InvoicingPage = () => {
     }
   };
 
+  const handleDeleteRecord = async (recordId: string) => {
+    try {
+      await deleteDoc(doc(db, 'invoicingRecords', recordId));
+    } catch (error) {
+      console.error('Error deleting record:', error);
+    }
+  };
+
   return (
     <div className="p-5 max-w-2xl mx-auto font-poppins">
-      {/* Customer Section */}
       <div className="mb-8">
         <h2 className="font-poppins text-xl font-semibold mb-4">Payments to be Received (Customer)</h2>
         <form onSubmit={handleAddCustomer} className="space-y-4">
@@ -295,8 +294,6 @@ const InvoicingPage = () => {
             Add Customer
           </Button>
         </form>
-
-        {/* Display Customer Records */}
         <div className="mt-4">
           <h3 className="font-poppins text-sm font-medium mb-2">Recent Customers</h3>
           {customerRecords.length === 0 ? (
@@ -309,9 +306,17 @@ const InvoicingPage = () => {
                     key={record.id}
                     className="flex flex-col p-2 bg-green-50 rounded-md text-sm"
                   >
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span>{record.name}</span>
-                      <span>KES {record.unpaidBalance?.toFixed(2)}</span>
+                      <div className="flex items-center space-x-2">
+                        <span>KES {record.unpaidBalance?.toFixed(2)}</span>
+                        <button
+                      onClick={() => handleDeleteRecord(record.id)}
+                      className='bg-transparent text-black text-xl hover:border-red-500 border p-1.5 rounded-md h-6 flex items-center'
+                    >
+                      -
+                    </button>
+                      </div>
                     </div>
                     <div className="text-gray-600">
                       <span>{record.productService} | Qty: {record.quantity} | </span>
@@ -328,11 +333,9 @@ const InvoicingPage = () => {
           )}
         </div>
       </div>
-
-      {/* Supplier Section */}
       <div>
         <h2 className="font-poppins text-xl font-semibold mb-4">Payments to be Made (Supplier)</h2>
-        <form onSubmit={handleAddSupplier} className=" Незавершённый код...space-y-4">
+        <form onSubmit={handleAddSupplier} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="supplierName" className="block text-sm font-medium">
@@ -430,8 +433,6 @@ const InvoicingPage = () => {
             Add Supplier
           </Button>
         </form>
-
-        {/* Display Supplier Records */}
         <div className="mt-4">
           <h3 className="font-poppins text-sm font-medium mb-2">Recent Suppliers</h3>
           {supplierRecords.length === 0 ? (
@@ -444,9 +445,17 @@ const InvoicingPage = () => {
                     key={record.id}
                     className="flex flex-col p-2 bg-red-50 rounded-md text-sm"
                   >
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span>{record.name}</span>
-                      <span>KES {record.amountDue?.toFixed(2)}</span>
+                      <div className="flex items-center space-x-2">
+                        <span>KES {record.amountDue?.toFixed(2)}</span>
+                        <button
+                      onClick={() => handleDeleteRecord(record.id)}
+                      className='bg-transparent text-black text-xl hover:border-red-500 border p-1.5 rounded-md h-6 flex items-center'
+                    >
+                      -
+                    </button>
+                      </div>
                     </div>
                     <div className="text-gray-600">
                       <span>{record.productService} | Qty: {record.quantity} | </span>

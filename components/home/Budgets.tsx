@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
 import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { db } from '@/configs/firebaseConfig';
-import { collection, doc, setDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, doc, setDoc, getDocs, query, where, deleteDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
@@ -34,10 +34,8 @@ type BudgetCategory = {
   userId: string;
 };
 
-// Use type assertion to fix TypeScript errors
 const categories = ['Needs', 'Wants', 'Savings'] as Category[];
 
-// Helper function to determine border color based on category title
 const getCategoryStyles = (title: string) => {
   switch (title) {
     case 'Needs':
@@ -71,24 +69,6 @@ const getCategoryStyles = (title: string) => {
   }
 };
 
-// const categoryIcons = (title:string) => {
-//   switch(title){
-//     case "Needs":
-//       return{
-//         imageUrl:'/images/needs.png'
-//       };
-//       case "Wants":
-//       return{
-//         imageUrl:'/images/need.png'
-//       };
-//       default: 
-//       return{
-//         imageUrl:'/images/piggy-bank.png'
-
-//       }
-//   }
-// }
-
 const Budgets: React.FC = () => {
   const [openIndex, setOpenIndex] = useState<string | undefined>(undefined);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -110,7 +90,6 @@ const Budgets: React.FC = () => {
   const queryClient = useQueryClient();
   const { currentUser, loading: authLoading } = useAuth();
 
-  // Fetch budgets from Firestore
   const { data: budgetsData = [], isLoading: queryLoading } = useQuery({
     queryKey: ['budgets', currentUser?.uid],
     queryFn: async () => {
@@ -133,7 +112,26 @@ const Budgets: React.FC = () => {
     enabled: !!currentUser && !authLoading,
   });
 
-  // Mutation to add a category
+  const updateBudgetTotals = async (budgets: BudgetCategory[]) => {
+    if (!currentUser) return;
+
+    const totals = {
+      income: 0, // Sum of allocated amounts
+      expenses: 0, // Sum of spent amounts
+      balance: 0, // Income - Expenses
+      userId: currentUser.uid,
+    };
+
+    budgets.forEach((budget) => {
+      totals.income += budget.allocated;
+      totals.expenses += budget.spent;
+    });
+
+    totals.balance = totals.income - totals.expenses;
+
+    await setDoc(doc(db, 'budgetTotals', currentUser.uid), totals);
+  };
+
   const addCategoryMutation = useMutation({
     mutationFn: async (newBudget: BudgetCategory) => {
       if (!currentUser) throw new Error('User not logged in');
@@ -153,13 +151,17 @@ const Budgets: React.FC = () => {
       });
       setShowAddForm(false);
     },
+    onSettled: async () => {
+      queryClient.invalidateQueries({ queryKey: ['budgets', currentUser?.uid] });
+      const budgets = await queryClient.fetchQuery<BudgetCategory[]>({ queryKey: ['budgets', currentUser?.uid] });
+      await updateBudgetTotals(budgets);
+    },
     onError: (error) => {
       console.error('Error adding category:', error);
       alert('Failed to add category.');
     },
   });
 
-  // Mutation to add a subcategory
   const addSubcategoryMutation = useMutation({
     mutationFn: async ({ categoryId, updatedCategory }: { categoryId: string; updatedCategory: BudgetCategory }) => {
       await setDoc(doc(db, 'budgets', categoryId), updatedCategory);
@@ -168,9 +170,50 @@ const Budgets: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['budgets', currentUser?.uid] });
       setNewSubcategory({ title: '', spent: 0, categoryIndex: '' });
     },
+    onSettled: async () => {
+      queryClient.invalidateQueries({ queryKey: ['budgets', currentUser?.uid] });
+      const budgets = await queryClient.fetchQuery<BudgetCategory[]>({ queryKey: ['budgets', currentUser?.uid] });
+      await updateBudgetTotals(budgets);
+    },
     onError: (error) => {
       console.error('Error adding subcategory:', error);
       alert('Failed to add subcategory.');
+    },
+  });
+
+  const deleteCategoryMutation = useMutation({
+    mutationFn: async (categoryId: string) => {
+      await deleteDoc(doc(db, 'budgets', categoryId));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['budgets', currentUser?.uid] });
+    },
+    onSettled: async () => {
+      queryClient.invalidateQueries({ queryKey: ['budgets', currentUser?.uid] });
+      const budgets = await queryClient.fetchQuery<BudgetCategory[]>({ queryKey: ['budgets', currentUser?.uid] });
+      await updateBudgetTotals(budgets);
+    },
+    onError: (error) => {
+      console.error('Error deleting category:', error);
+      alert('Failed to delete category.');
+    },
+  });
+
+  const deleteSubcategoryMutation = useMutation({
+    mutationFn: async ({ categoryId, updatedCategory }: { categoryId: string; updatedCategory: BudgetCategory }) => {
+      await setDoc(doc(db, 'budgets', categoryId), updatedCategory);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['budgets', currentUser?.uid] });
+    },
+    onSettled: async () => {
+      queryClient.invalidateQueries({ queryKey: ['budgets', currentUser?.uid] });
+      const budgets = await queryClient.fetchQuery<BudgetCategory[]>({ queryKey: ['budgets', currentUser?.uid] });
+      await updateBudgetTotals(budgets);
+    },
+    onError: (error) => {
+      console.error('Error deleting subcategory:', error);
+      alert('Failed to delete subcategory.');
     },
   });
 
@@ -218,19 +261,43 @@ const Budgets: React.FC = () => {
       ...category.subcategories,
       { title: newSubcategory.title, spent: newSubcategory.spent },
     ];
-    // Calculate the new total spent amount for the category
     const newTotalSpent = updatedSubcategories.reduce((total, sub) => total + sub.spent, 0);
 
     const updatedCategory = {
       ...category,
       subcategories: updatedSubcategories,
-      spent: newTotalSpent, // Update the spent field
+      spent: newTotalSpent,
     };
 
     addSubcategoryMutation.mutate({
       categoryId: category.id!,
       updatedCategory,
     });
+  };
+
+  const deleteCategory = (categoryId: string) => {
+    if (confirm('Are you sure you want to delete this category?')) {
+      deleteCategoryMutation.mutate(categoryId);
+    }
+  };
+
+  const deleteSubcategory = (categoryIndex: number, subcategoryIndex: number) => {
+    if (confirm('Are you sure you want to delete this subcategory?')) {
+      const category = budgetsData[categoryIndex];
+      const updatedSubcategories = category.subcategories.filter((_, i) => i !== subcategoryIndex);
+      const newTotalSpent = updatedSubcategories.reduce((total, sub) => total + sub.spent, 0);
+
+      const updatedCategory = {
+        ...category,
+        subcategories: updatedSubcategories,
+        spent: newTotalSpent,
+      };
+
+      deleteSubcategoryMutation.mutate({
+        categoryId: category.id!,
+        updatedCategory,
+      });
+    }
   };
 
   if (authLoading || queryLoading) {
@@ -249,7 +316,6 @@ const Budgets: React.FC = () => {
         </Button>
       </div>
 
-      {/* Add Category Form */}
       {showAddForm && (
         <div className="mb-6 p-4 border rounded-lg bg-white shadow-sm">
           <h2 className="font-bold mb-3">Add New Category</h2>
@@ -295,7 +361,6 @@ const Budgets: React.FC = () => {
                 placeholder="30"
               />
             </div>
-           
           </div>
           <Button
             onClick={addCategory}
@@ -307,7 +372,6 @@ const Budgets: React.FC = () => {
         </div>
       )}
 
-      {/* Budget Categories List */}
       <div className="flex flex-col gap-10">
         {budgetsData.length === 0 ? (
           <p className="text-gray-500">No budget categories yet. Add one to get started!</p>
@@ -326,17 +390,30 @@ const Budgets: React.FC = () => {
                 >
                   <AccordionTrigger className="flex justify-between items-center w-full [&>div]:w-full">
                     <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${styles.bgColor} ${styles.borderColor} border-2`}>
-                          <Image src='/images/needs.png' alt='icon' width={20} height={20}/>
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${styles.bgColor} ${styles.borderColor} border-2`}>
+                        <Image src='/images/needs.png' alt='icon' width={20} height={20}/>
+                      </div>
+                      <div>
+                        <div className='flex gap-2'>
+                          <h3 className="font-poppins font-semibold text-sm">{category.title}</h3>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-500 hover:text-red-700 p-1 h-6 w-6"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteCategory(category.id!);
+                            }}
+                          >
+                            <Trash2 size={16} />
+                          </Button>
                         </div>
-                        <div>
-                        <h3 className="font-poppins font-semibold text-sm">{category.title}</h3>
                         <div className='flex items-center gap-2'>
-                          <p className="tetx-sm">
+                          <p className="text-sm">
                             {category.percentage}%
                           </p>
                           <p className='text-sm'>
-                            Ksh {category.allocated.toLocaleString()} 
+                            Ksh {category.allocated.toLocaleString()}
                           </p>
                         </div>
                       </div>
@@ -358,7 +435,17 @@ const Budgets: React.FC = () => {
                         className="flex justify-between items-center py-2 border-b border-gray-200 last:border-0"
                       >
                         <span className="font-poppins text-gray-700">{sub.title}</span>
-                        <span className="font-medium">{sub.spent.toLocaleString()} Ksh</span>
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium">{sub.spent.toLocaleString()} Ksh</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-500 hover:text-red-700 p-1 h-6 w-6"
+                            onClick={() => deleteSubcategory(index, i)}
+                          >
+                            <Trash2 size={16} />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                     <div className="pt-3 flex gap-2">

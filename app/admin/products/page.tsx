@@ -14,6 +14,8 @@ export default function AddProductsPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [preview, setPreview] = useState("");
+
   const [price, setPrice] = useState("");
   const [fileUrl, setFileUrl] = useState("");
 
@@ -27,6 +29,7 @@ export default function AddProductsPage() {
       await addDoc(collection(db, "products"), {
         name,
         description,
+        preview,
         price: parseFloat(price),
         fileUrl,
         createdAt: new Date(),
@@ -58,6 +61,12 @@ export default function AddProductsPage() {
           placeholder="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          className="h-32"
+        />
+        <Textarea
+          placeholder="Preview"
+          value={preview}
+          onChange={(e) => setPreview(e.target.value)}
           className="h-32"
         />
         <Input

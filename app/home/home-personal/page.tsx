@@ -1,4 +1,3 @@
-import BudgetInputSection from '@/components/home/BudgetInput'
 import Budgets from '@/components/home/Budgets'
 import HelloSection from '@/components/home/HelloSection'
 import IncomeData from '@/components/home/IncomeData'
@@ -10,7 +9,7 @@ import React from 'react'
         {/* hello section */}
         <HelloSection/>
         {/*budget */}
-        <BudgetInputSection/>
+        {/* <BudgetInputSection/> */}
         <IncomeData/>
         <Budgets/>
         <div className='h-[85px]'></div>
