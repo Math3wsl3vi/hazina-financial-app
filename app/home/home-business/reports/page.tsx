@@ -360,6 +360,7 @@ const FinancialReportPage = () => {
           <div className="border p-2 bg-green-50 rounded-md py-4">
           {/* Fixed Assets */}
           <div className="space-y-2">
+          <h3 className="text-xl uppercase font-semibold">Balance Sheet</h3>
             <h3 className="font-medium">Fixed Assets</h3>
             <div>
               <Label>Land & Building</Label>
@@ -523,7 +524,7 @@ const FinancialReportPage = () => {
           <div className="border p-2 rounded-md bg-blue-50 py-4">
             {/* Profit & Loss */}
             <div className="space-y-2 ">
-              <h3 className="font-medium text-2xl">Profit & Loss</h3>
+              <h3 className="font-semibold uppercase text-xl">Profit & Loss</h3>
               <div>
                 <Label>Opening Inventory</Label>
                 <Input 
