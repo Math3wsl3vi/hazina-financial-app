@@ -48,7 +48,7 @@ const IncomeData = () => {
   }, [currentUser]);
 
   return (
-    <div className='flex flex-col gap-4 p-6 m-4 mt-10 rounded-2xl shadow-lg border border-green-100 bg-blue-50'>
+    <div className='flex flex-col gap-4 p-6 m-4 mt-10 rounded-2xl shadow-lg bg-gradient-to-br from-blue-200/40 to-emerald-50/70 '>
       {/* Balance Section */}
       <div className='flex justify-between items-center'>
         <div>
