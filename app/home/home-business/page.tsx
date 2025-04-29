@@ -1,17 +1,20 @@
 "use client";
+
 import React, { useState, useEffect } from 'react';
-import { collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, Timestamp, deleteDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, Timestamp, deleteDoc, doc, where } from 'firebase/firestore';
 import { db } from '@/configs/firebaseConfig';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/context/AuthContext';
 
 interface FinancialRecord {
   id: string;
   type: 'income' | 'expense';
   note: string;
   amount: number;
-  createdAt: Timestamp 
+  createdAt: Timestamp;
+  userId: string;
 }
 
 const TrackerPage = () => {
@@ -27,32 +30,76 @@ const TrackerPage = () => {
 
   const [incomeRecords, setIncomeRecords] = useState<FinancialRecord[]>([]);
   const [expenseRecords, setExpenseRecords] = useState<FinancialRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const { currentUser, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    const incomeQuery = query(
-      collection(db, 'financialRecords'),
-      orderBy('createdAt', 'desc')
-    );
+    if (authLoading) return;
+    
+    console.log("Auth state:", currentUser ? `User: ${currentUser.uid}` : "No user");
+    
+    if (!currentUser) {
+      setLoading(false);
+      return;
+    }
 
-    const unsubscribe = onSnapshot(incomeQuery, (snapshot) => {
-      const records: FinancialRecord[] = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as FinancialRecord[];
+    try {
+      const recordsQuery = query(
+        collection(db, 'financialRecords'),
+        where('userId', '==', currentUser.uid),
+        orderBy('createdAt', 'desc')
+      );
 
-      setIncomeRecords(records.filter((record) => record.type === 'income'));
-      setExpenseRecords(records.filter((record) => record.type === 'expense'));
-    }, (error) => {
-      console.error('Error fetching records:', error);
-    });
+      console.log("Setting up Firebase listener for:", currentUser.uid);
+      
+      const unsubscribe = onSnapshot(recordsQuery, (snapshot) => {
+        console.log(`Received ${snapshot.docs.length} records from Firestore`);
+        
+        const records: FinancialRecord[] = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            type: data.type,
+            note: data.note,
+            amount: data.amount,
+            createdAt: data.createdAt,
+            userId: data.userId
+          } as FinancialRecord;
+        });
 
-    return () => unsubscribe();
-  }, []);
+        const incomes = records.filter((record) => record.type === 'income');
+        const expenses = records.filter((record) => record.type === 'expense');
+        
+        console.log(`Filtered ${incomes.length} income records and ${expenses.length} expense records`);
+        
+        setIncomeRecords(incomes);
+        setExpenseRecords(expenses);
+        setLoading(false);
+      }, (error) => {
+        console.error('Error fetching records:', error);
+        setLoading(false);
+      });
+
+      return () => {
+        console.log("Unsubscribing from Firebase listener");
+        unsubscribe();
+      };
+    } catch (error) {
+      console.error("Error setting up Firebase listener:", error);
+      setLoading(false);
+    }
+  }, [currentUser, authLoading]);
 
   const handleAddIncome = async (e: React.FormEvent) => {
     e.preventDefault();
     setIncomeError('');
     setIncomeSuccess('');
+
+    if (!currentUser) {
+      setIncomeError('You must be logged in to add income.');
+      return;
+    }
 
     if (!incomeNote || !incomeAmount) {
       setIncomeError('Please fill in all fields');
@@ -66,18 +113,22 @@ const TrackerPage = () => {
     }
 
     try {
+      console.log("Adding income record:", { note: incomeNote, amount });
+      
       await addDoc(collection(db, 'financialRecords'), {
         type: 'income',
         note: incomeNote,
         amount: amount,
+        userId: currentUser.uid,
         createdAt: serverTimestamp(),
       });
+      
       setIncomeSuccess('Income added successfully!');
       setIncomeNote('');
       setIncomeAmount('');
     } catch (error) {
-      setIncomeError('Failed to add income. Please try again.');
       console.error('Error adding income:', error);
+      setIncomeError('Failed to add income. Please try again.');
     }
   };
 
@@ -85,6 +136,11 @@ const TrackerPage = () => {
     e.preventDefault();
     setExpenseError('');
     setExpenseSuccess('');
+
+    if (!currentUser) {
+      setExpenseError('You must be logged in to add expense.');
+      return;
+    }
 
     if (!expenseNote || !expenseAmount) {
       setExpenseError('Please fill in all fields');
@@ -98,31 +154,62 @@ const TrackerPage = () => {
     }
 
     try {
+      console.log("Adding expense record:", { note: expenseNote, amount });
+      
       await addDoc(collection(db, 'financialRecords'), {
         type: 'expense',
         note: expenseNote,
         amount: amount,
+        userId: currentUser.uid,
         createdAt: serverTimestamp(),
       });
+      
       setExpenseSuccess('Expense added successfully!');
       setExpenseNote('');
       setExpenseAmount('');
     } catch (error) {
-      setExpenseError('Failed to add expense. Please try again.');
       console.error('Error adding expense:', error);
+      setExpenseError('Failed to add expense. Please try again.');
     }
   };
 
   const handleDeleteRecord = async (recordId: string) => {
+    if (!currentUser) return;
+    
     try {
+      console.log("Deleting record:", recordId);
       await deleteDoc(doc(db, 'financialRecords', recordId));
     } catch (error) {
       console.error('Error deleting record:', error);
     }
   };
 
+  if (authLoading || loading) {
+    return (
+      <div className="p-4 flex justify-center items-center min-h-[300px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2"></div>
+          <p>Loading records...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return (
+      <div className="p-5 max-w-md mx-auto font-poppins">
+        <div className="text-center p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+          <p className="text-sm text-yellow-700">
+            Please sign in to track your income and expenses.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-5 max-w-md mx-auto font-poppins">
+      {/* Income Section */}
       <div className="mb-8">
         <h2 className="font-poppins text-xl font-semibold mb-4">Income</h2>
         <form onSubmit={handleAddIncome} className="space-y-4">
@@ -161,7 +248,7 @@ const TrackerPage = () => {
             <p className="text-xs text-green-500">{incomeSuccess}</p>
           )}
           <Button type="submit" className="w-full">
-            Add
+            Add Income
           </Button>
         </form>
         <div className="mt-4">
@@ -175,16 +262,17 @@ const TrackerPage = () => {
                   key={record.id}
                   className="flex justify-between items-center p-2 bg-green-50 rounded-md"
                 >
-                  <span className="text-sm">{record.note}</span>
+                  <span className="text-sm">{record.note || "Unnamed"}</span>
                   <div className="flex items-center space-x-2">
                     <span className="text-sm font-semibold">
-                      KES {record.amount.toFixed(2)}
+                      KES {(record.amount || 0).toFixed(2)}
                     </span>
                     <button
                       onClick={() => handleDeleteRecord(record.id)}
-                      className='bg-transparent text-black text-xl hover:border-red-500 border p-1.5 rounded-md h-6 flex items-center'
+                      className="bg-transparent text-red-500 hover:text-red-700 hover:bg-red-50 border border-transparent hover:border-red-200 p-1 rounded-md h-6 w-6 flex items-center justify-center"
+                      aria-label="Delete record"
                     >
-                      -
+                      ×
                     </button>
                   </div>
                 </li>
@@ -193,6 +281,8 @@ const TrackerPage = () => {
           )}
         </div>
       </div>
+
+      {/* Expense Section */}
       <div>
         <h2 className="font-poppins text-xl font-semibold mb-4">Expense</h2>
         <form onSubmit={handleAddExpense} className="space-y-4">
@@ -231,7 +321,7 @@ const TrackerPage = () => {
             <p className="text-xs text-green-500">{expenseSuccess}</p>
           )}
           <Button type="submit" className="w-full">
-            Add
+            Add Expense
           </Button>
         </form>
         <div className="mt-4">
@@ -245,16 +335,17 @@ const TrackerPage = () => {
                   key={record.id}
                   className="flex justify-between items-center p-2 bg-red-50 rounded-md"
                 >
-                  <span className="text-sm">{record.note}</span>
+                  <span className="text-sm">{record.note || "Unnamed"}</span>
                   <div className="flex items-center space-x-2">
                     <span className="text-sm font-semibold">
-                      KES {record.amount.toFixed(2)}
+                      KES {(record.amount || 0).toFixed(2)}
                     </span>
                     <button
                       onClick={() => handleDeleteRecord(record.id)}
-                      className='bg-transparent text-black text-xl hover:border-red-500 border p-1.5 rounded-md h-6 flex items-center'
+                      className="bg-transparent text-red-500 hover:text-red-700 hover:bg-red-50 border border-transparent hover:border-red-200 p-1 rounded-md h-6 w-6 flex items-center justify-center"
+                      aria-label="Delete record"
                     >
-                      -
+                      ×
                     </button>
                   </div>
                 </li>
