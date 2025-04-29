@@ -36,7 +36,7 @@ export default function InvestmentsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-4 pb-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 pt-4 pb-12 px-2 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         <div className="space-y-8">
           <InvestmentForm onInvest={handleInvest} />

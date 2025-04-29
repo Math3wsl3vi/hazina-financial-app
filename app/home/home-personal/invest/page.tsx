@@ -3,6 +3,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import InvestmentsPage from "@/components/invest/InvestPage";
 
 export default function InvestmentPage() {
   return (
@@ -19,7 +20,7 @@ export default function InvestmentPage() {
         <TabsContent value="local">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
             {/* Low Risk Card */}
-            <Card>
+            <Card className="bg-green-50">
               <CardHeader>
                 <CardTitle className="text-green-600">Low Risk (1-3%)</CardTitle>
               </CardHeader>
@@ -43,7 +44,7 @@ export default function InvestmentPage() {
             </Card>
 
             {/* Medium Risk Card */}
-            <Card>
+            <Card className="bg-yellow-50">
               <CardHeader>
                 <CardTitle className="text-yellow-600">Medium Risk (4-7%)</CardTitle>
               </CardHeader>
@@ -64,7 +65,7 @@ export default function InvestmentPage() {
             </Card>
 
             {/* High Risk Card */}
-            <Card>
+            <Card className="bg-red-50">
               <CardHeader>
                 <CardTitle className="text-red-600">High Risk (8-15%)</CardTitle>
               </CardHeader>
@@ -90,7 +91,7 @@ export default function InvestmentPage() {
         <TabsContent value="global">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
             {/* HAZING POND Card */}
-            <Card>
+            <Card className="bg-green-50">
               <CardHeader>
                 <CardTitle>Low risk investments</CardTitle>
               </CardHeader>
@@ -114,7 +115,7 @@ export default function InvestmentPage() {
             </Card>
 
             {/* Industrial Investment Card */}
-            <Card>
+            <Card className="bg-yellow-50">
               <CardHeader>
                 <CardTitle>Medium risk investments</CardTitle>
               </CardHeader>
@@ -135,7 +136,7 @@ export default function InvestmentPage() {
             </Card>
 
             {/* SCOP II Card */}
-            <Card>
+            <Card className="bg-red-50">
               <CardHeader>
                 <CardTitle>High risk investments</CardTitle>
               </CardHeader>
@@ -188,10 +189,7 @@ export default function InvestmentPage() {
         </div>
       </div>
 
-      {/* Footer */}
-      {/* <div className="mt-12 text-center text-sm text-gray-500">
-        <p>For more information, visit: www.boreshasacco.co.ke</p>
-      </div> */}
+       <InvestmentsPage/>
      <div className="h-[75px]"></div>
     </div>
   );

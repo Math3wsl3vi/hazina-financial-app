@@ -43,7 +43,7 @@ export default function SavingsForm({ onSave }: SavingsFormProps) {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md font-poppins">
+    <div className="bg-blue-50 p-6 rounded-lg shadow-md font-poppins">
       <h2 className="text-xl font-semibold mb-4">Add New Savings</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -109,7 +109,7 @@ export default function SavingsForm({ onSave }: SavingsFormProps) {
 
         <button
           type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-150 ease-in-out"
+          className="w-full bg-black text-white font-medium py-2 px-4 rounded-md transition duration-150 ease-in-out"
         >
           Add Savings
         </button>

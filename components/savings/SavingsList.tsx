@@ -1,4 +1,6 @@
 import { SavingsEntry } from "@/lib/types";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Button } from "../ui/button";
 
 
 interface SavingsListProps {
@@ -19,7 +21,7 @@ export default function SavingsList({ savings, onDelete }: SavingsListProps) {
 
   return (
     <div className="space-y-6 font-poppins">
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-green-50 p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-semibold mb-2">Savings Summary</h2>
         <div className="flex justify-between items-center">
           <span className="text-gray-600">Total Entries:</span>
@@ -33,7 +35,7 @@ export default function SavingsList({ savings, onDelete }: SavingsListProps) {
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-green-50 p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-semibold mb-4">Your Savings</h2>
         <div className="space-y-4">
           {savings.map((entry) => (
@@ -68,6 +70,18 @@ export default function SavingsList({ savings, onDelete }: SavingsListProps) {
           ))}
         </div>
       </div>
+      <div>
+        <Card>
+            <CardHeader>
+              <CardTitle>Get to Learn</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Saving Methods and Tips</p>
+              <Button className="mt-4 w-full">Read More</Button>
+            </CardContent>
+          </Card>
+
+        </div>
     </div>
   );
 }
