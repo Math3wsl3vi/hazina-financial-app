@@ -393,8 +393,8 @@ const Budgets: React.FC = () => {
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center ${styles.bgColor} ${styles.borderColor} border-2`}>
                         <Image src='/images/needs.png' alt='icon' width={20} height={20}/>
                       </div>
-                      <div>
-                        <div className='flex gap-2'>
+                      <div className=' w-full'>
+                        <div className='flex gap-2 '>
                           <h3 className="font-poppins font-semibold text-sm">{category.title}</h3>
                           <Button
                             variant="ghost"
@@ -412,7 +412,7 @@ const Budgets: React.FC = () => {
                           <p className="text-sm">
                             {category.percentage}%
                           </p>
-                          <p className='text-sm'>
+                          <p className='text-sm '>
                             Ksh {category.allocated.toLocaleString()}
                           </p>
                         </div>

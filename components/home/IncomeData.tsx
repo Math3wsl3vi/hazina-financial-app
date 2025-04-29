@@ -70,13 +70,13 @@ const IncomeData = () => {
       <div className='flex justify-between gap-4 w-full'>
         <div className='flex-1 bg-gradient-to-br from-green-100/40 to-emerald-50/70 rounded-xl p-4 flex flex-col items-center shadow-sm border border-emerald-900/30'>
           <h1 className='text-sm text-emerald-300 font-poppins'>Income</h1>
-          <p className='text-lg font-semibold text-emerald-400 font-poppins'>
+          <p className='text-sm font-semibold text-emerald-400 font-poppins'>
             + Ksh: {budgetTotals.income.toLocaleString()}
           </p>
         </div>
         <div className='flex-1 bg-gradient-to-br from-red-100/40 to-rose-50/70 rounded-xl p-4 flex flex-col items-center shadow-sm border border-rose-900/30'>
           <h1 className='text-sm text-rose-300 font-poppins'>Expenses</h1>
-          <p className='text-lg font-semibold text-rose-400 font-poppins'>
+          <p className='text-sm font-semibold text-rose-400 font-poppins'>
             - Ksh: {budgetTotals.expenses.toLocaleString()}
           </p>
         </div>
