@@ -185,16 +185,6 @@ export default function InvestmentPage() {
               <Button className="mt-4 w-full">View Watchlist</Button>
             </CardContent>
           </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Network</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>Connect with other investors</p>
-              <Button className="mt-4 w-full">Explore Network</Button>
-            </CardContent>
-          </Card>
         </div>
       </div>
 
