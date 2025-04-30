@@ -8,6 +8,7 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@
 import { addDoc, collection, getDocs, serverTimestamp } from "firebase/firestore";
 import { db } from "@/configs/firebaseConfig";
 import { toast } from 'react-hot-toast';
+import { useRouter } from "next/navigation";
 
 interface DebtEntry {
   id?: string;
@@ -33,6 +34,7 @@ export default function DebtManagementPage() {
   const [creditors, setCreditors] = useState<DebtEntry[]>([]);
   const [debtors, setDebtors] = useState<DebtEntry[]>([]);
   const [upcomingPayments, setUpcomingPayments] = useState<UpcomingPayment[]>([]);
+  const router = useRouter()
 
   // Load data from Firestore
   useEffect(() => {
@@ -189,7 +191,7 @@ export default function DebtManagementPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Creditors Card */}
-        <Card>
+        <Card className="bg-red-50">
           <CardHeader>
             <CardTitle>Creditors</CardTitle>
           </CardHeader>
@@ -221,7 +223,7 @@ export default function DebtManagementPage() {
         </Card>
 
         {/* Debtors Card */}
-        <Card>
+        <Card className="bg-green-50">
           <CardHeader>
             <CardTitle>Debtors</CardTitle>
           </CardHeader>
@@ -254,7 +256,7 @@ export default function DebtManagementPage() {
       </div>
 
       {/* Upcoming Payments Card */}
-      <Card>
+      <Card className="bg-blue-50">
         <CardHeader>
           <CardTitle>Upcoming Debt Repayment</CardTitle>
         </CardHeader>
@@ -346,6 +348,7 @@ export default function DebtManagementPage() {
             </Button>
           </CardFooter>
         </Card>
+         
       </div>
 
       {/* Analytics Section */}
@@ -362,15 +365,24 @@ export default function DebtManagementPage() {
               </p>
               <Button variant="outline">Learn More</Button>
             </div>
-            <div>
-              <h3 className="font-semibold mb-2">Debt Repayment Protected</h3>
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Repayment Methods</CardTitle>
+        </CardHeader>
+        <CardContent>
+        <div>
+         <h3 className="font-semibold mb-2">Debt Repayment Protected</h3>
               <p className="text-sm text-gray-600 mb-4">
                 Get the loan deposit approach to debt management. Procedure method. Cancel method. 
                 Choose a material element for repayment.
               </p>
-              <Button variant="outline">Learn More</Button>
+              <Button 
+              onClick={()=>router.push('/home/home-personal/repayment')}
+              variant="outline">Learn More</Button>
             </div>
-          </div>
         </CardContent>
       </Card>
       <div className="h-[55px]"></div>
