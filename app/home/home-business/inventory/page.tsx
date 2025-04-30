@@ -5,6 +5,31 @@ import { db } from '@/configs/firebaseConfig';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+
+// Mock useAuth hook (replace with your actual auth logic)
+const useAuth = () => {
+  const [uid, setUid] = useState<string | null>(null);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUid(user.uid);
+      } else {
+        setUid(null);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  return { uid };
+};
+
+// Interface for streak data in Firestore
+interface StreakRecord {
+  date: string;
+}
 
 interface InventoryRecord {
   id: string;
@@ -13,7 +38,7 @@ interface InventoryRecord {
   quantity: number;
   price: number;
   note: string;
-  createdAt:Timestamp
+  createdAt: Timestamp;
 }
 
 interface PayrollRecord {
@@ -21,10 +46,12 @@ interface PayrollRecord {
   name: string;
   salaryAmount: number;
   note: string;
-  createdAt:Timestamp
+  createdAt: Timestamp;
 }
 
 const InventoryPayrollPage = () => {
+  const { uid } = useAuth(); // Get the current user's UID
+
   // State for Inventory "In" form
   const [inName, setInName] = useState('');
   const [inQuantity, setInQuantity] = useState('');
@@ -52,14 +79,22 @@ const InventoryPayrollPage = () => {
   const [inRecords, setInRecords] = useState<InventoryRecord[]>([]);
   const [outRecords, setOutRecords] = useState<InventoryRecord[]>([]);
   const [payrollRecords, setPayrollRecords] = useState<PayrollRecord[]>([]);
+  const [streak, setStreak] = useState<number>(0);
+  const [streakBroken, setStreakBroken] = useState<boolean>(false);
+  const [streakHistory, setStreakHistory] = useState<StreakRecord[]>([]);
+  console.log(streak)
+  console.log(streakBroken)
+  console.log(streakHistory)
 
-  // Fetch inventory records from Firestore in real-time
+  // Fetch inventory, payroll, and streak records for the specific user
   useEffect(() => {
+    if (!uid) return; // Wait until the UID is available
+
+    // Inventory Records
     const inventoryQuery = query(
-      collection(db, 'inventoryRecords'),
+      collection(db, `users/${uid}/inventoryRecords`),
       orderBy('createdAt', 'desc')
     );
-
     const unsubscribeInventory = onSnapshot(inventoryQuery, (snapshot) => {
       const records: InventoryRecord[] = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -72,12 +107,11 @@ const InventoryPayrollPage = () => {
       console.error('Error fetching inventory records:', error);
     });
 
-    // Fetch payroll records
+    // Payroll Records
     const payrollQuery = query(
-      collection(db, 'payrollRecords'),
+      collection(db, `users/${uid}/payrollRecords`),
       orderBy('createdAt', 'desc')
     );
-
     const unsubscribePayroll = onSnapshot(payrollQuery, (snapshot) => {
       const records: PayrollRecord[] = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -89,23 +123,90 @@ const InventoryPayrollPage = () => {
       console.error('Error fetching payroll records:', error);
     });
 
+    // Streak Records
+    const streakQuery = query(
+      collection(db, `users/${uid}/streakRecords`),
+      orderBy('date', 'desc')
+    );
+    const unsubscribeStreak = onSnapshot(streakQuery, (snapshot) => {
+      const records = snapshot.docs.map((doc) => ({
+        date: doc.data().date,
+      })) as StreakRecord[];
+      setStreakHistory(records);
+      calculateStreak(records);
+    });
+
     return () => {
       unsubscribeInventory();
       unsubscribePayroll();
+      unsubscribeStreak();
     };
-  }, []);
+  }, [uid]);
 
   // Calculate payroll totals
   const totalEmployees = payrollRecords.length;
   const totalSalaries = payrollRecords.reduce((sum, record) => sum + record.salaryAmount, 0);
 
+  // Function to calculate streak and check if it's broken
+  const calculateStreak = (history: StreakRecord[]) => {
+    if (history.length === 0) {
+      setStreak(0);
+      setStreakBroken(false);
+      return;
+    }
+
+    const sortedHistory = history
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    let currentStreak = 1;
+    let streakIsBroken = false;
+    const now = new Date();
+    const oneDayInMs = 24 * 60 * 60 * 1000;
+
+    const uniqueDates = Array.from(new Set(sortedHistory.map(record => record.date.split('T')[0])))
+      .map(date => sortedHistory.find(record => record.date.split('T')[0] === date)!);
+
+    for (let i = 0; i < uniqueDates.length - 1; i++) {
+      const currentDate = new Date(uniqueDates[i].date);
+      const nextDate = new Date(uniqueDates[i + 1].date);
+
+      const timeDiff = currentDate.getTime() - nextDate.getTime();
+      if (timeDiff <= oneDayInMs * 1.1) {
+        currentStreak++;
+      } else {
+        break;
+      }
+
+      const timeSinceLastEntry = now.getTime() - currentDate.getTime();
+      if (timeSinceLastEntry > oneDayInMs * 1.1) {
+        streakIsBroken = true;
+      }
+    }
+
+    setStreak(currentStreak);
+    setStreakBroken(streakIsBroken);
+  };
+
+  // Function to add a streak record
+  const addStreakRecord = async () => {
+    if (!uid) return;
+    const today = new Date().toISOString();
+    const newStreakRecord: StreakRecord = { date: today };
+    await addDoc(collection(db, `users/${uid}/streakRecords`), newStreakRecord);
+  };
+
   // Function to handle adding inventory "In"
   const handleAddIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!uid) {
+      setInError('User not authenticated. Please log in.');
+      return;
+    }
+
     setInError('');
     setInSuccess('');
 
-    if (!inName || !inQuantity || !inPrice ) {
+    if (!inName || !inQuantity || !inPrice) {
       setInError('Please fill in all fields');
       return;
     }
@@ -123,7 +224,7 @@ const InventoryPayrollPage = () => {
     }
 
     try {
-      await addDoc(collection(db, 'inventoryRecords'), {
+      await addDoc(collection(db, `users/${uid}/inventoryRecords`), {
         type: 'in',
         name: inName,
         quantity: quantity,
@@ -131,6 +232,7 @@ const InventoryPayrollPage = () => {
         note: inNote,
         createdAt: serverTimestamp(),
       });
+      await addStreakRecord();
       setInSuccess('Inventory "In" added successfully!');
       setInName('');
       setInQuantity('');
@@ -145,10 +247,15 @@ const InventoryPayrollPage = () => {
   // Function to handle adding inventory "Out"
   const handleAddOut = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!uid) {
+      setOutError('User not authenticated. Please log in.');
+      return;
+    }
+
     setOutError('');
     setOutSuccess('');
 
-    if (!outName || !outQuantity || !outPrice ) {
+    if (!outName || !outQuantity || !outPrice) {
       setOutError('Please fill in all fields');
       return;
     }
@@ -166,7 +273,7 @@ const InventoryPayrollPage = () => {
     }
 
     try {
-      await addDoc(collection(db, 'inventoryRecords'), {
+      await addDoc(collection(db, `users/${uid}/inventoryRecords`), {
         type: 'out',
         name: outName,
         quantity: quantity,
@@ -174,6 +281,7 @@ const InventoryPayrollPage = () => {
         note: outNote,
         createdAt: serverTimestamp(),
       });
+      await addStreakRecord();
       setOutSuccess('Inventory "Out" added successfully!');
       setOutName('');
       setOutQuantity('');
@@ -188,6 +296,11 @@ const InventoryPayrollPage = () => {
   // Function to handle adding payroll
   const handleAddPayroll = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!uid) {
+      setPayrollError('User not authenticated. Please log in.');
+      return;
+    }
+
     setPayrollError('');
     setPayrollSuccess('');
 
@@ -204,12 +317,13 @@ const InventoryPayrollPage = () => {
     }
 
     try {
-      await addDoc(collection(db, 'payrollRecords'), {
+      await addDoc(collection(db, `users/${uid}/payrollRecords`), {
         name: payrollName,
         salaryAmount: salaryAmount,
         note: payrollNote,
         createdAt: serverTimestamp(),
       });
+      await addStreakRecord();
       setPayrollSuccess('Payroll entry added successfully!');
       setPayrollName('');
       setPayrollSalaryAmount('');
@@ -220,10 +334,30 @@ const InventoryPayrollPage = () => {
     }
   };
 
+  if (!uid) {
+    return (
+      <div className="p-5 max-w-2xl mx-auto mt-20 font-poppins">
+        <p className="text-red-500">Please log in to manage inventory and payroll.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-5 max-w-2xl mx-auto mt-20 font-poppins">
+    <div className="p-5 max-w-2xl mx-auto font-poppins">
+      {/* Streak Display */}
+      {/* <div className="bg-gray-100 p-4 rounded-lg mb-8 -mt-20">
+        <h3 className="text-lg font-semibold text-gray-800">
+          Your Daily Inventory/Payroll Update Streak: {streak}
+        </h3>
+        {streakBroken && (
+          <p className="text-red-600 mt-2">
+            Streak Broken! You missed a daily update. Keep going to start a new streak!
+          </p>
+        )}
+      </div> */}
+
       {/* Inventory Section */}
-      <div className="mb-8 -mt-20">
+      <div className="mb-8">
         <h2 className="font-poppins text-xl font-semibold mb-4">Inventory</h2>
 
         {/* Inventory "In" Form */}
