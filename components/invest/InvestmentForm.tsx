@@ -183,7 +183,7 @@ export default function InvestmentForm({ onInvest }: InvestmentFormProps) {
 
       <Button
         type="submit"
-        className="px-4 py-2 bg-black text-white rounded-md hover:bg-green-700 w-full"
+        className="px-4 py-2 bg-black text-white rounded-md w-full"
       >
         Add Investment
       </Button>

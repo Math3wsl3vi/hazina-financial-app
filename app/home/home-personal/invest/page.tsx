@@ -4,11 +4,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import InvestmentsPage from "@/components/invest/InvestPage";
+import SnapshotCard from "@/components/invest/Snapshot";
 
 export default function InvestmentPage() {
   return (
     <div className="container mx-auto py-8 px-4 font-poppins">
-      <h1 className="text-3xl font-bold text-center mb-8">Investment Options</h1>
+      <h1 className="text-3xl font-bold text-center mb-8">
+        Investment Options
+      </h1>
 
       <Tabs defaultValue="local" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
@@ -22,7 +25,9 @@ export default function InvestmentPage() {
             {/* Low Risk Card */}
             <Card className="bg-green-50">
               <CardHeader>
-                <CardTitle className="text-green-600">Low Risk (1-3%)</CardTitle>
+                <CardTitle className="text-green-600">
+                  Low Risk (1-3%)
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
@@ -46,7 +51,9 @@ export default function InvestmentPage() {
             {/* Medium Risk Card */}
             <Card className="bg-yellow-50">
               <CardHeader>
-                <CardTitle className="text-yellow-600">Medium Risk (4-7%)</CardTitle>
+                <CardTitle className="text-yellow-600">
+                  Medium Risk (4-7%)
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
@@ -67,7 +74,9 @@ export default function InvestmentPage() {
             {/* High Risk Card */}
             <Card className="bg-red-50">
               <CardHeader>
-                <CardTitle className="text-red-600">High Risk (8-15%)</CardTitle>
+                <CardTitle className="text-red-600">
+                  High Risk (8-15%)
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
@@ -152,11 +161,10 @@ export default function InvestmentPage() {
                     <span className="mr-2">•</span> Tech-focused ETFs
                   </li>
                   <li className="flex items-center">
-                    <span className="mr-2">•</span>  Single stock investing
+                    <span className="mr-2">•</span> Single stock investing
                   </li>
                 </ul>
                 <Button className="mt-4 w-full">Learn More</Button>
-               
               </CardContent>
             </Card>
           </div>
@@ -167,15 +175,12 @@ export default function InvestmentPage() {
       <div className="mt-12">
         <h2 className="text-2xl font-bold mb-6">Your Portfolio</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>{"Today's"} Snapshot</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>View your current investment performance</p>
-              <Button className="mt-4 w-full">View Snapshot</Button>
-            </CardContent>
-          </Card>
+          <SnapshotCard
+            indexName="NI225"
+            indexLabel="Japan 225 Index"
+            price="36,045.16"
+            changePercent={0.57}
+          />
 
           <Card>
             <CardHeader>
@@ -189,8 +194,8 @@ export default function InvestmentPage() {
         </div>
       </div>
 
-       <InvestmentsPage/>
-     <div className="h-[75px]"></div>
+      <InvestmentsPage />
+      <div className=""></div>
     </div>
   );
 }

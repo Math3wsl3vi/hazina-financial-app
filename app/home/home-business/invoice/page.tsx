@@ -1,10 +1,12 @@
 "use client";
+
 import React, { useState, useEffect } from 'react';
-import { collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, Timestamp, deleteDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, Timestamp, deleteDoc, doc, where } from 'firebase/firestore';
 import { db } from '@/configs/firebaseConfig';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/context/AuthContext';
 
 interface InvoicingRecord {
   id: string;
@@ -12,12 +14,13 @@ interface InvoicingRecord {
   name: string;
   productService: string;
   quantity: number;
-  dueDate: string;
+  dueDate?: string;
   pricePerItem: number;
   unpaidBalance?: number;
   amountToBePaid?: number;
   amountDue?: number;
-  createdAt: Timestamp
+  userId: string;
+  createdAt: Timestamp;
 }
 
 const InvoicingPage = () => {
@@ -42,9 +45,14 @@ const InvoicingPage = () => {
   const [customerRecords, setCustomerRecords] = useState<InvoicingRecord[]>([]);
   const [supplierRecords, setSupplierRecords] = useState<InvoicingRecord[]>([]);
 
+  const { currentUser, loading: authLoading } = useAuth();
+
   useEffect(() => {
+    if (!currentUser || authLoading) return;
+
     const invoicingQuery = query(
       collection(db, 'invoicingRecords'),
+      where('userId', '==', currentUser.uid),
       orderBy('createdAt', 'desc')
     );
 
@@ -61,7 +69,7 @@ const InvoicingPage = () => {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [currentUser, authLoading]);
 
   const customerTotal = customerRecords.reduce((sum, record) => sum + (record.unpaidBalance || 0), 0);
   const supplierTotal = supplierRecords.reduce((sum, record) => sum + (record.amountDue || 0), 0);
@@ -70,6 +78,11 @@ const InvoicingPage = () => {
     e.preventDefault();
     setCustomerError('');
     setCustomerSuccess('');
+
+    if (!currentUser) {
+      setCustomerError('You must be logged in to add a customer.');
+      return;
+    }
 
     if (
       !customerName ||
@@ -109,6 +122,7 @@ const InvoicingPage = () => {
         dueDate: customerDueDate,
         pricePerItem: pricePerItem,
         unpaidBalance: unpaidBalance,
+        userId: currentUser.uid,
         createdAt: serverTimestamp(),
       });
       setCustomerSuccess('Customer added successfully!');
@@ -128,6 +142,11 @@ const InvoicingPage = () => {
     e.preventDefault();
     setSupplierError('');
     setSupplierSuccess('');
+
+    if (!currentUser) {
+      setSupplierError('You must be logged in to add a supplier.');
+      return;
+    }
 
     if (
       !supplierName ||
@@ -172,6 +191,7 @@ const InvoicingPage = () => {
         pricePerItem: pricePerItem,
         amountToBePaid: amountToBePaid,
         amountDue: amountDue,
+        userId: currentUser.uid,
         createdAt: serverTimestamp(),
       });
       setSupplierSuccess('Supplier added successfully!');
@@ -194,6 +214,10 @@ const InvoicingPage = () => {
       console.error('Error deleting record:', error);
     }
   };
+
+  if (authLoading) {
+    return <div className="p-4">Loading...</div>;
+  }
 
   return (
     <div className="p-5 max-w-2xl mx-auto font-poppins">
@@ -279,7 +303,7 @@ const InvoicingPage = () => {
                 min="0"
                 value={customerUnpaidBalance}
                 onChange={(e) => setCustomerUnpaidBalance(e.target.value)}
-                className="w-full"
+                className="w-full"  
                 placeholder="Enter unpaid balance"
               />
             </div>
@@ -290,7 +314,7 @@ const InvoicingPage = () => {
           {customerSuccess && (
             <p className="text-xs text-green-500">{customerSuccess}</p>
           )}
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full" disabled={!currentUser}>
             Add Customer
           </Button>
         </form>
@@ -311,11 +335,11 @@ const InvoicingPage = () => {
                       <div className="flex items-center space-x-2">
                         <span>KES {record.unpaidBalance?.toFixed(2)}</span>
                         <button
-                      onClick={() => handleDeleteRecord(record.id)}
-                      className='bg-transparent text-black text-xl hover:border-red-500 border p-1.5 rounded-md h-6 flex items-center'
-                    >
-                      -
-                    </button>
+                          onClick={() => handleDeleteRecord(record.id)}
+                          className='bg-transparent text-black text-xl hover:border-red-500 border p-1.5 rounded-md h-6 flex items-center'
+                        >
+                          -
+                        </button>
                       </div>
                     </div>
                     <div className="text-gray-600">
@@ -429,7 +453,7 @@ const InvoicingPage = () => {
           {supplierSuccess && (
             <p className="text-xs text-green-500">{supplierSuccess}</p>
           )}
-          <Button type="submit" className="w-full mt-5">
+          <Button type="submit" className="w-full mt-5" disabled={!currentUser}>
             Add Supplier
           </Button>
         </form>
@@ -450,11 +474,11 @@ const InvoicingPage = () => {
                       <div className="flex items-center space-x-2">
                         <span>KES {record.amountDue?.toFixed(2)}</span>
                         <button
-                      onClick={() => handleDeleteRecord(record.id)}
-                      className='bg-transparent text-black text-xl hover:border-red-500 border p-1.5 rounded-md h-6 flex items-center'
-                    >
-                      -
-                    </button>
+                          onClick={() => handleDeleteRecord(record.id)}
+                          className='bg-transparent text-black text-xl hover:border-red-500 border p-1.5 rounded-md h-6 flex items-center'
+                        >
+                          -
+                        </button>
                       </div>
                     </div>
                     <div className="text-gray-600">

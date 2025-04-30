@@ -272,7 +272,7 @@ const TrackerPage = () => {
                       className="bg-transparent text-red-500 hover:text-red-700 hover:bg-red-50 border border-transparent hover:border-red-200 p-1 rounded-md h-6 w-6 flex items-center justify-center"
                       aria-label="Delete record"
                     >
-                      ×
+                      -
                     </button>
                   </div>
                 </li>
@@ -345,7 +345,7 @@ const TrackerPage = () => {
                       className="bg-transparent text-red-500 hover:text-red-700 hover:bg-red-50 border border-transparent hover:border-red-200 p-1 rounded-md h-6 w-6 flex items-center justify-center"
                       aria-label="Delete record"
                     >
-                      ×
+                      -
                     </button>
                   </div>
                 </li>
