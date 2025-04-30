@@ -18,6 +18,8 @@ export default function AddProductsPage() {
 
   const [price, setPrice] = useState("");
   const [fileUrl, setFileUrl] = useState("");
+  const [coverImage, setCoverImage] = useState("");
+
 
   const handleSubmit = async () => {
     if (!name || !description || !price ) {
@@ -32,6 +34,7 @@ export default function AddProductsPage() {
         preview,
         price: parseFloat(price),
         fileUrl,
+        coverImage,
         createdAt: new Date(),
       });
       toast.success('Product added successfully!');
@@ -77,7 +80,13 @@ export default function AddProductsPage() {
         />
         <Input
           type="text"
-          placeholder="Paste PDF Link (Google Drive / Dropbox)"
+          placeholder="Paste Cover Image Link (Google Drive)"
+          value={coverImage}
+          onChange={(e) => setCoverImage(e.target.value)}
+        />
+        <Input
+          type="text"
+          placeholder="Paste PDF Link (Google Drive)"
           value={fileUrl}
           onChange={(e) => setFileUrl(e.target.value)}
         />
