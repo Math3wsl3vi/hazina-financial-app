@@ -5,8 +5,10 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import InvestmentsPage from "@/components/invest/InvestPage";
 import SnapshotCard from "@/components/invest/Snapshot";
+import { useRouter } from "next/navigation";
 
 export default function InvestmentPage() {
+  const router = useRouter()
   return (
     <div className="container mx-auto py-8 px-4 font-poppins">
       <h1 className="text-3xl font-bold text-center mb-8">
@@ -44,7 +46,9 @@ export default function InvestmentPage() {
                     <span className="mr-2">•</span> Commercial papers
                   </li>
                 </ul>
-                <Button className="mt-4 w-full">Explore Low Risk</Button>
+                <Button 
+                onClick={()=>router.push('/home/home-personal/InvestmentOptions')}
+                className="mt-4 w-full">Explore Low Risk</Button>
               </CardContent>
             </Card>
 
@@ -67,7 +71,9 @@ export default function InvestmentPage() {
                     <span className="mr-2">•</span> Corporate bonds
                   </li>
                 </ul>
-                <Button className="mt-4 w-full">Explore Medium Risk</Button>
+                <Button 
+                onClick={()=>router.push('/home/home-personal/InvestmentOptions')}
+                className="mt-4 w-full">Explore Medium Risk</Button>
               </CardContent>
             </Card>
 
@@ -90,7 +96,9 @@ export default function InvestmentPage() {
                     <span className="mr-2">•</span> Growth-oriented Unit Funds
                   </li>
                 </ul>
-                <Button className="mt-4 w-full">Explore High Risk</Button>
+                <Button 
+                onClick={()=>router.push('/home/home-personal/InvestmentOptions')}
+                className="mt-4 w-full">Explore High Risk</Button>
               </CardContent>
             </Card>
           </div>
@@ -119,7 +127,9 @@ export default function InvestmentPage() {
                     <span className="mr-2">•</span> High-Grade Corporate Bonds
                   </li>
                 </ul>
-                <Button className="mt-4 w-full">Learn More</Button>
+                <Button 
+                onClick={()=>router.push('/home/home-personal/InvestmentOptions')}
+                className="mt-4 w-full">Learn More</Button>
               </CardContent>
             </Card>
 
@@ -140,7 +150,9 @@ export default function InvestmentPage() {
                     <span className="mr-2">•</span> Index funds
                   </li>
                 </ul>
-                <Button className="mt-4 w-full">Learn More</Button>
+                <Button 
+                onClick={()=>router.push('/home/home-personal/InvestmentOptions')}
+                className="mt-4 w-full">Learn More</Button>
               </CardContent>
             </Card>
 
@@ -164,7 +176,9 @@ export default function InvestmentPage() {
                     <span className="mr-2">•</span> Single stock investing
                   </li>
                 </ul>
-                <Button className="mt-4 w-full">Learn More</Button>
+                <Button 
+                onClick={()=>router.push('/home/home-personal/InvestmentOptions')}
+                className="mt-4 w-full">Learn More</Button>
               </CardContent>
             </Card>
           </div>
