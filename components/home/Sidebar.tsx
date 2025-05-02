@@ -4,7 +4,7 @@ import React from 'react'
 
 const Sidebar = () => {
   return (
-    <div className='hidden md:flex flex-col justify-start gap-8 p-6 fixed top-0 left-0 h-full w-[200px] bg-slate-50 shadow-md mt-[70px]'>
+    <div className='hidden md:flex flex-col justify-start gap-8 p-6 absolute top-0 left-0 h-full w-[200px] bg-slate-50 shadow-md mt-[70px]'>
       <Link href='/home/home-personal' className='flex items-center gap-3 cursor-pointer'>
         <Image src='/images/budget.png' alt='budget' width={20} height={20}/>
         <span className='font-poppins text-sm font-semibold'>Budget</span>

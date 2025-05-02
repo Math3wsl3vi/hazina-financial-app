@@ -4,7 +4,7 @@ import React from 'react'
 
 const BusinessSidebar = () => {
   return (
-    <div className='hidden md:flex flex-col justify-start gap-8 p-6 fixed top-0 left-0 h-full w-[200px] bg-slate-50 shadow-md mt-[70px]'>
+    <div className='hidden md:flex flex-col justify-start gap-8 p-6 absolute top-0 left-0 h-full w-[200px] bg-slate-50 shadow-md mt-[70px]'>
        <Link href='/home/home-business' className='flex items-center py-2 gap-3 cursor-pointer'>
             <Image src='/images/tracker.png' alt='budget' width={20} height={20}/>
             <h1 className='font-poppins text-sm font-semibold'>Trackers</h1>
