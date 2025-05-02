@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono,Poppins } from "next/font/google";
+import { Geist, Geist_Mono, Poppins } from "next/font/google";
 import "../../globals.css";
 import Navbar from "@/components/home/Navbar";
-import BusinessBottomBar from "@/components/business-finance/BusinessBottomBar";
+import BottomBar from "@/components/home/BottomBar";
+import BusinessSidebar from "@/components/business-finance/BusinessSidebar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,14 +16,13 @@ const geistMono = Geist_Mono({
 });
 
 const poppins = Poppins({
-  weight: ["400", "500", "600", "700"], // choose weights you need
+  weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
   variable: "--font-poppins",
 });
 
-
 export const metadata: Metadata = {
-  title: "Hazina ",
+  title: "Hazina",
   description: "Your All-in-One Financial Powerhouse",
 };
 
@@ -33,10 +33,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-     <body className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable}`}>
-        <Navbar/>
-        {children}
-        <BusinessBottomBar/>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} bg-white`}>
+        <Navbar />
+        <BusinessSidebar/>
+
+        {/* Main layout container with sidebar margin on md+ screens and bottom margin on mobile */}
+        <div className="flex">
+          <div className="w-full md:ml-[200px] pb-[80px]">
+            {children}
+          </div>
+        </div>
+
+        <BottomBar />
       </body>
     </html>
   );

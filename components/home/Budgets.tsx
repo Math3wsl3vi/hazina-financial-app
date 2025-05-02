@@ -392,7 +392,7 @@ const Budgets: React.FC = () => {
   }
 
   return (
-    <div className="p-4">
+    <div className="p-2 md:w-2/3">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold font-poppins text-gray-800">
           Budget Categories

@@ -48,40 +48,41 @@ const IncomeData = () => {
   }, [currentUser]);
 
   return (
-    <div className='flex flex-col gap-4 p-6 m-4 mt-10 rounded-2xl shadow-lg bg-gradient-to-br from-blue-200/40 to-emerald-50/70 '>
-      {/* Balance Section */}
-      <div className='flex justify-between items-center'>
-        <div>
-          <h1 className='text-md font-medium text-indigo-300 font-poppins'>Total Balance</h1>
-          <p className='text-2xl font-semibold text-black font-poppins'>
-            {showBalance ? `Ksh: ${budgetTotals.balance.toLocaleString()}` : '••••••'}
-          </p>
-        </div>
-        <button 
-          onClick={toggleVisibility} 
-          className='text-blue-300 hover:text-blue-400 transition-colors'
-          aria-label={showBalance ? 'Hide balance' : 'Show balance'}
-        >
-          {showBalance ? <EyeOff size={20} /> : <Eye size={20} />}
-        </button>
-      </div>
-
-      {/* Income & Expenses */}
-      <div className='flex justify-between gap-4 w-full'>
-        <div className='flex-1 bg-gradient-to-br from-green-100/40 to-emerald-50/70 rounded-xl p-4 flex flex-col items-center shadow-sm border border-emerald-900/30'>
-          <h1 className='text-sm text-emerald-300 font-poppins'>Income</h1>
-          <p className='text-sm font-semibold text-emerald-400 font-poppins'>
-            + Ksh: {budgetTotals.income.toLocaleString()}
-          </p>
-        </div>
-        <div className='flex-1 bg-gradient-to-br from-red-100/40 to-rose-50/70 rounded-xl p-4 flex flex-col items-center shadow-sm border border-rose-900/30'>
-          <h1 className='text-sm text-rose-300 font-poppins'>Expenses</h1>
-          <p className='text-sm font-semibold text-rose-400 font-poppins'>
-            - Ksh: {budgetTotals.expenses.toLocaleString()}
-          </p>
-        </div>
-      </div>
+   <div className='flex flex-col gap-4 p-4 m-4 mt-10 rounded-2xl shadow-lg bg-gradient-to-br from-blue-200/40 to-emerald-50/70 w-full max-w-3xl mx-auto'>
+  {/* Balance Section */}
+  <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2'>
+    <div>
+      <h1 className='text-sm font-medium text-indigo-300 font-poppins'>Total Balance</h1>
+      <p className='text-2xl font-semibold text-black font-poppins'>
+        {showBalance ? `Ksh: ${budgetTotals.balance.toLocaleString()}` : '••••••'}
+      </p>
     </div>
+    <button 
+      onClick={toggleVisibility} 
+      className='text-blue-300 hover:text-blue-400 transition-colors mt-2 sm:mt-0'
+      aria-label={showBalance ? 'Hide balance' : 'Show balance'}
+    >
+      {showBalance ? <EyeOff size={20} /> : <Eye size={20} />}
+    </button>
+  </div>
+
+  {/* Income & Expenses */}
+  <div className='flex flex-col sm:flex-row justify-between gap-4 w-full'>
+    <div className='flex-1 bg-gradient-to-br from-green-100/40 to-emerald-50/70 rounded-xl p-4 flex flex-col items-center shadow-sm border border-emerald-900/30'>
+      <h1 className='text-sm text-emerald-300 font-poppins'>Income</h1>
+      <p className='text-sm font-semibold text-emerald-400 font-poppins'>
+        + Ksh: {budgetTotals.income.toLocaleString()}
+      </p>
+    </div>
+    <div className='flex-1 bg-gradient-to-br from-red-100/40 to-rose-50/70 rounded-xl p-4 flex flex-col items-center shadow-sm border border-rose-900/30'>
+      <h1 className='text-sm text-rose-300 font-poppins'>Expenses</h1>
+      <p className='text-sm font-semibold text-rose-400 font-poppins'>
+        - Ksh: {budgetTotals.expenses.toLocaleString()}
+      </p>
+    </div>
+  </div>
+</div>
+
   );
 };
 
