@@ -92,45 +92,56 @@ interface FinancialSettings {
   salaries: number;
   marketing: number;
   generalExpenses: number;
+  otherIncome: number;
+  salesRevenue: number;
 }
 
 const FinancialReportPage = () => {
   const { uid } = useAuth(); // Get the current user's UID
-  const [financialRecords, setFinancialRecords] = useState<FinancialRecord[]>([]);
-  const [invoicingRecords, setInvoicingRecords] = useState<InvoicingRecord[]>([]);
-  const [inventoryRecords, setInventoryRecords] = useState<InventoryRecord[]>([]);
+  const [financialRecords, setFinancialRecords] = useState<FinancialRecord[]>(
+    []
+  );
+  const [invoicingRecords, setInvoicingRecords] = useState<InvoicingRecord[]>(
+    []
+  );
+  const [inventoryRecords, setInventoryRecords] = useState<InventoryRecord[]>(
+    []
+  );
   const [payrollRecords, setPayrollRecords] = useState<PayrollRecord[]>([]);
-  const [financialSettings, setFinancialSettings] = useState<FinancialSettings>({
-    landAndBuilding: 0,
-    plantPropertyEquipment: 0,
-    cashInHand: 0,
-    inventory: 0,
-    debtors: 0,
-    creditors: 0,
-    bankOverdraft: 0,
-    mortgage: 0,
-    retainedEarnings: 0,
-    ownerCapital: 0,
-    incomeFromSales: 0,
-    openingInventory: 0,
-    purchases: 0,
-    closingInventory: 0,
-    rent: 0,
-    transport: 0,
-    salaries: 0,
-    marketing: 0,
-    generalExpenses: 0,
-  });
+  const [financialSettings, setFinancialSettings] = useState<FinancialSettings>(
+    {
+      landAndBuilding: 0,
+      plantPropertyEquipment: 0,
+      cashInHand: 0,
+      inventory: 0,
+      debtors: 0,
+      creditors: 0,
+      bankOverdraft: 0,
+      mortgage: 0,
+      retainedEarnings: 0,
+      ownerCapital: 0,
+      incomeFromSales: 0,
+      salesRevenue: 0,
+      openingInventory: 0,
+      purchases: 0,
+      closingInventory: 0,
+      rent: 0,
+      transport: 0,
+      salaries: 0,
+      marketing: 0,
+      generalExpenses: 0,
+      otherIncome: 0,
+    }
+  );
   const [settingsError, setSettingsError] = useState("");
   const [settingsSuccess, setSettingsSuccess] = useState("");
   const [streak, setStreak] = useState<number>(0);
   const [streakBroken, setStreakBroken] = useState<boolean>(false);
   const [streakHistory, setStreakHistory] = useState<StreakRecord[]>([]);
-  console.log(streak)
-  console.log(streakBroken)
-  console.log(streakHistory)
+  console.log(streak);
+  console.log(streakBroken);
+  console.log(streakHistory);
 
-  
   // Fetch all records and streak data for the specific user
   useEffect(() => {
     if (!uid) return; // Wait until the UID is available
@@ -227,8 +238,9 @@ const FinancialReportPage = () => {
     }
 
     // Sort history by date (newest first)
-    const sortedHistory = history
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const sortedHistory = history.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
 
     let currentStreak = 1;
     let streakIsBroken = false;
@@ -236,8 +248,12 @@ const FinancialReportPage = () => {
     const oneDayInMs = 24 * 60 * 60 * 1000; // 1 day in milliseconds
 
     // Remove duplicates by date (keep only the latest entry per day)
-    const uniqueDates = Array.from(new Set(sortedHistory.map(record => record.date.split('T')[0])))
-      .map(date => sortedHistory.find(record => record.date.split('T')[0] === date)!);
+    const uniqueDates = Array.from(
+      new Set(sortedHistory.map((record) => record.date.split("T")[0]))
+    ).map(
+      (date) =>
+        sortedHistory.find((record) => record.date.split("T")[0] === date)!
+    );
 
     for (let i = 0; i < uniqueDates.length - 1; i++) {
       const currentDate = new Date(uniqueDates[i].date);
@@ -245,7 +261,8 @@ const FinancialReportPage = () => {
 
       // Check if the current entry is within 1 day of the previous one
       const timeDiff = currentDate.getTime() - nextDate.getTime();
-      if (timeDiff <= oneDayInMs * 1.1) { // Allow 10% buffer for flexibility
+      if (timeDiff <= oneDayInMs * 1.1) {
+        // Allow 10% buffer for flexibility
         currentStreak++;
       } else {
         break;
@@ -267,11 +284,15 @@ const FinancialReportPage = () => {
     const fixedAssets = {
       landAndBuilding: financialSettings.landAndBuilding,
       plantPropertyEquipment: financialSettings.plantPropertyEquipment,
-      total: financialSettings.landAndBuilding + financialSettings.plantPropertyEquipment,
+      total:
+        financialSettings.landAndBuilding +
+        financialSettings.plantPropertyEquipment,
     };
 
     const cashBalance = financialRecords.reduce((total, record) => {
-      return record.type === "income" ? total + record.amount : total - record.amount;
+      return record.type === "income"
+        ? total + record.amount
+        : total - record.amount;
     }, financialSettings.cashInHand);
 
     const inventoryValue = inventoryRecords.reduce((total, record) => {
@@ -280,7 +301,11 @@ const FinancialReportPage = () => {
     }, financialSettings.inventory);
 
     const debtors = invoicingRecords
-      .filter(record => record.type === "customer" && (record.status === "unpaid" || record.status === "partial"))
+      .filter(
+        (record) =>
+          record.type === "customer" &&
+          (record.status === "unpaid" || record.status === "partial")
+      )
       .reduce((total, record) => {
         const unpaidAmount = record.amount - (record.paidAmount || 0);
         return total + unpaidAmount;
@@ -294,7 +319,11 @@ const FinancialReportPage = () => {
     };
 
     const creditors = invoicingRecords
-      .filter(record => record.type === "supplier" && (record.status === "unpaid" || record.status === "partial"))
+      .filter(
+        (record) =>
+          record.type === "supplier" &&
+          (record.status === "unpaid" || record.status === "partial")
+      )
       .reduce((total, record) => {
         const unpaidAmount = record.amount - (record.paidAmount || 0);
         return total + unpaidAmount;
@@ -304,13 +333,17 @@ const FinancialReportPage = () => {
       creditors: creditors,
       bankOverdraft: financialSettings.bankOverdraft,
       mortgage: financialSettings.mortgage,
-      total: creditors + financialSettings.bankOverdraft + financialSettings.mortgage,
+      total:
+        creditors +
+        financialSettings.bankOverdraft +
+        financialSettings.mortgage,
     };
 
     const capital = {
       retainedEarnings: financialSettings.retainedEarnings,
       ownerCapital: financialSettings.ownerCapital,
-      total: financialSettings.retainedEarnings + financialSettings.ownerCapital,
+      total:
+        financialSettings.retainedEarnings + financialSettings.ownerCapital,
     };
 
     const totalAssets = fixedAssets.total + currentAssets.total;
@@ -330,12 +363,12 @@ const FinancialReportPage = () => {
   // Enhanced profit and loss calculation
   const calculateProfitAndLoss = () => {
     const salesRevenue = inventoryRecords
-      .filter(record => record.type === "out")
+      .filter((record) => record.type === "out")
       .reduce((total, record) => total + record.quantity * record.price, 0);
 
     const openingInventory = financialSettings.openingInventory;
     const purchases = inventoryRecords
-      .filter(record => record.type === "in")
+      .filter((record) => record.type === "in")
       .reduce((total, record) => total + record.quantity * record.price, 0);
     const closingInventory = inventoryRecords.reduce((total, record) => {
       const value = record.quantity * record.price;
@@ -363,7 +396,8 @@ const FinancialReportPage = () => {
         financialSettings.generalExpenses,
     };
 
-    const netProfit = grossProfit - operatingExpenses.total;
+    const netProfit =
+      grossProfit + financialSettings.otherIncome - operatingExpenses.total;
 
     return {
       salesRevenue,
@@ -395,7 +429,10 @@ const FinancialReportPage = () => {
 
     try {
       // Save financial settings
-      await setDoc(doc(db, `users/${uid}/financialSettings/settings`), financialSettings);
+      await setDoc(
+        doc(db, `users/${uid}/financialSettings/settings`),
+        financialSettings
+      );
 
       // Update streak
       const today = new Date().toISOString();
@@ -450,7 +487,7 @@ const FinancialReportPage = () => {
               <h3 className="font-medium">Fixed Assets</h3>
               <div>
                 <Label>Land & Building</Label>
-                <Input 
+                <Input
                   className="bg-white"
                   type="number"
                   value={financialSettings.landAndBuilding}
@@ -464,7 +501,7 @@ const FinancialReportPage = () => {
               </div>
               <div>
                 <Label>Plant, Property & Equipment</Label>
-                <Input 
+                <Input
                   className="bg-white"
                   type="number"
                   value={financialSettings.plantPropertyEquipment}
@@ -483,7 +520,7 @@ const FinancialReportPage = () => {
               <h3 className="font-medium">Current Assets</h3>
               <div>
                 <Label>Cash in Hand</Label>
-                <Input 
+                <Input
                   className="bg-white"
                   type="number"
                   value={financialSettings.cashInHand}
@@ -497,7 +534,7 @@ const FinancialReportPage = () => {
               </div>
               <div>
                 <Label>Inventory</Label>
-                <Input 
+                <Input
                   className="bg-white"
                   type="number"
                   value={financialSettings.inventory}
@@ -511,7 +548,7 @@ const FinancialReportPage = () => {
               </div>
               <div>
                 <Label>Debtors</Label>
-                <Input 
+                <Input
                   className="bg-white"
                   type="number"
                   value={financialSettings.debtors}
@@ -530,7 +567,7 @@ const FinancialReportPage = () => {
               <h3 className="font-medium">Liabilities</h3>
               <div>
                 <Label>Creditors</Label>
-                <Input 
+                <Input
                   className="bg-white"
                   type="number"
                   value={financialSettings.creditors}
@@ -544,7 +581,7 @@ const FinancialReportPage = () => {
               </div>
               <div>
                 <Label>Bank Overdraft</Label>
-                <Input 
+                <Input
                   className="bg-white"
                   type="number"
                   value={financialSettings.bankOverdraft}
@@ -558,7 +595,7 @@ const FinancialReportPage = () => {
               </div>
               <div>
                 <Label>Mortgage</Label>
-                <Input 
+                <Input
                   className="bg-white"
                   type="number"
                   value={financialSettings.mortgage}
@@ -577,7 +614,7 @@ const FinancialReportPage = () => {
               <h3 className="font-medium">Capital</h3>
               <div>
                 <Label>Retained Earnings</Label>
-                <Input 
+                <Input
                   className="bg-white"
                   type="number"
                   value={financialSettings.retainedEarnings}
@@ -591,7 +628,7 @@ const FinancialReportPage = () => {
               </div>
               <div>
                 <Label>Owner Capital</Label>
-                <Input 
+                <Input
                   className="bg-white"
                   type="number"
                   value={financialSettings.ownerCapital}
@@ -611,8 +648,22 @@ const FinancialReportPage = () => {
             <div className="space-y-2">
               <h3 className="font-semibold uppercase text-xl">Profit & Loss</h3>
               <div>
+                <Label>Sales Inventory</Label>
+                <Input
+                  className="bg-white"
+                  type="number"
+                  value={financialSettings.salesRevenue}
+                  onChange={(e) =>
+                    setFinancialSettings({
+                      ...financialSettings,
+                      salesRevenue: Number(e.target.value),
+                    })
+                  }
+                />
+              </div>
+              <div>
                 <Label>Opening Inventory</Label>
-                <Input 
+                <Input
                   className="bg-white"
                   type="number"
                   value={financialSettings.openingInventory}
@@ -626,7 +677,7 @@ const FinancialReportPage = () => {
               </div>
               <div>
                 <Label>Purchases</Label>
-                <Input 
+                <Input
                   className="bg-white"
                   type="number"
                   value={financialSettings.purchases}
@@ -640,7 +691,7 @@ const FinancialReportPage = () => {
               </div>
               <div>
                 <Label>Closing Inventory</Label>
-                <Input 
+                <Input
                   className="bg-white"
                   type="number"
                   value={financialSettings.closingInventory}
@@ -659,7 +710,7 @@ const FinancialReportPage = () => {
               <h3 className="font-medium">Operating Expenses</h3>
               <div>
                 <Label>Rent</Label>
-                <Input 
+                <Input
                   className="bg-white"
                   type="number"
                   value={financialSettings.rent}
@@ -673,7 +724,7 @@ const FinancialReportPage = () => {
               </div>
               <div>
                 <Label>Transport</Label>
-                <Input 
+                <Input
                   className="bg-white"
                   type="number"
                   value={financialSettings.transport}
@@ -687,7 +738,7 @@ const FinancialReportPage = () => {
               </div>
               <div>
                 <Label>Salaries</Label>
-                <Input 
+                <Input
                   className="bg-white"
                   type="number"
                   value={financialSettings.salaries}
@@ -701,7 +752,7 @@ const FinancialReportPage = () => {
               </div>
               <div>
                 <Label>Marketing</Label>
-                <Input 
+                <Input
                   className="bg-white"
                   type="number"
                   value={financialSettings.marketing}
@@ -715,7 +766,7 @@ const FinancialReportPage = () => {
               </div>
               <div>
                 <Label>General Expenses</Label>
-                <Input 
+                <Input
                   className="bg-white"
                   type="number"
                   value={financialSettings.generalExpenses}
@@ -723,6 +774,20 @@ const FinancialReportPage = () => {
                     setFinancialSettings({
                       ...financialSettings,
                       generalExpenses: Number(e.target.value),
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <Label>Other Income</Label>
+                <Input
+                  className="bg-white"
+                  type="number"
+                  value={financialSettings.otherIncome}
+                  onChange={(e) =>
+                    setFinancialSettings({
+                      ...financialSettings,
+                      otherIncome: Number(e.target.value),
                     })
                   }
                 />
@@ -758,15 +823,23 @@ const FinancialReportPage = () => {
               </div>
               <div className="flex justify-between pl-4">
                 <span>Land & Building</span>
-                <span>KES {balanceSheet.fixedAssets.landAndBuilding.toLocaleString()}</span>
+                <span>
+                  KES{" "}
+                  {balanceSheet.fixedAssets.landAndBuilding.toLocaleString()}
+                </span>
               </div>
               <div className="flex justify-between pl-4">
                 <span>Plant, Property & Equipment</span>
-                <span>KES {balanceSheet.fixedAssets.plantPropertyEquipment.toLocaleString()}</span>
+                <span>
+                  KES{" "}
+                  {balanceSheet.fixedAssets.plantPropertyEquipment.toLocaleString()}
+                </span>
               </div>
               <div className="flex justify-between font-medium border-t pt-1">
                 <span>Total Fixed Assets</span>
-                <span>KES {balanceSheet.fixedAssets.total.toLocaleString()}</span>
+                <span>
+                  KES {balanceSheet.fixedAssets.total.toLocaleString()}
+                </span>
               </div>
 
               <div className="flex justify-between mt-2">
@@ -775,19 +848,27 @@ const FinancialReportPage = () => {
               </div>
               <div className="flex justify-between pl-4">
                 <span>Cash & Bank</span>
-                <span>KES {balanceSheet.currentAssets.cash.toLocaleString()}</span>
+                <span>
+                  KES {balanceSheet.currentAssets.cash.toLocaleString()}
+                </span>
               </div>
               <div className="flex justify-between pl-4">
                 <span>Inventory</span>
-                <span>KES {balanceSheet.currentAssets.inventory.toLocaleString()}</span>
+                <span>
+                  KES {balanceSheet.currentAssets.inventory.toLocaleString()}
+                </span>
               </div>
               <div className="flex justify-between pl-4">
                 <span>Accounts Receivable</span>
-                <span>KES {balanceSheet.currentAssets.debtors.toLocaleString()}</span>
+                <span>
+                  KES {balanceSheet.currentAssets.debtors.toLocaleString()}
+                </span>
               </div>
               <div className="flex justify-between font-medium border-t pt-1">
                 <span>Total Current Assets</span>
-                <span>KES {balanceSheet.currentAssets.total.toLocaleString()}</span>
+                <span>
+                  KES {balanceSheet.currentAssets.total.toLocaleString()}
+                </span>
               </div>
 
               <div className="flex justify-between font-bold text-lg border-t-2 pt-2 mt-2">
@@ -805,19 +886,28 @@ const FinancialReportPage = () => {
               <div className="pl-4 space-y-2">
                 <div className="flex justify-between pl-4">
                   <span>Accounts Payable</span>
-                  <span>KES {balanceSheet.liabilities.creditors.toLocaleString()}</span>
+                  <span>
+                    KES {balanceSheet.liabilities.creditors.toLocaleString()}
+                  </span>
                 </div>
                 <div className="flex justify-between pl-4">
                   <span>Bank Overdraft</span>
-                  <span>KES {balanceSheet.liabilities.bankOverdraft.toLocaleString()}</span>
+                  <span>
+                    KES{" "}
+                    {balanceSheet.liabilities.bankOverdraft.toLocaleString()}
+                  </span>
                 </div>
                 <div className="flex justify-between pl-4">
                   <span>Mortgage</span>
-                  <span>KES {balanceSheet.liabilities.mortgage.toLocaleString()}</span>
+                  <span>
+                    KES {balanceSheet.liabilities.mortgage.toLocaleString()}
+                  </span>
                 </div>
                 <div className="flex justify-between font-medium border-t pt-1">
                   <span>Total Liabilities</span>
-                  <span>KES {balanceSheet.liabilities.total.toLocaleString()}</span>
+                  <span>
+                    KES {balanceSheet.liabilities.total.toLocaleString()}
+                  </span>
                 </div>
               </div>
             </div>
@@ -828,11 +918,15 @@ const FinancialReportPage = () => {
               <div className="pl-4 space-y-2">
                 <div className="flex justify-between pl-4">
                   <span>Retained Earnings</span>
-                  <span>KES {balanceSheet.capital.retainedEarnings.toLocaleString()}</span>
+                  <span>
+                    KES {balanceSheet.capital.retainedEarnings.toLocaleString()}
+                  </span>
                 </div>
                 <div className="flex justify-between pl-4">
                   <span>{"Owner's"} Capital</span>
-                  <span>KES {balanceSheet.capital.ownerCapital.toLocaleString()}</span>
+                  <span>
+                    KES {balanceSheet.capital.ownerCapital.toLocaleString()}
+                  </span>
                 </div>
                 <div className="flex justify-between font-medium border-t pt-1">
                   <span>Total Capital</span>
@@ -844,12 +938,15 @@ const FinancialReportPage = () => {
 
           <div className="flex justify-between font-bold text-lg border-t-2 pt-2">
             <span>TOTAL LIABILITIES & CAPITAL</span>
-            <span>KES {balanceSheet.totalLiabilitiesAndCapital.toLocaleString()}</span>
+            <span>
+              KES {balanceSheet.totalLiabilitiesAndCapital.toLocaleString()}
+            </span>
           </div>
 
           {!balanceSheet.balanceCheck && (
             <div className="text-red-500 text-sm mt-2">
-              Warning: Assets do not equal Liabilities + Capital. Please check your entries.
+              Warning: Assets do not equal Liabilities + Capital. Please check
+              your entries.
             </div>
           )}
         </div>
@@ -871,7 +968,9 @@ const FinancialReportPage = () => {
             </div>
             <div className="flex justify-between pl-4">
               <span>Opening Inventory</span>
-              <span>KES {profitAndLoss.cogs.openingInventory.toLocaleString()}</span>
+              <span>
+                KES {profitAndLoss.cogs.openingInventory.toLocaleString()}
+              </span>
             </div>
             <div className="flex justify-between pl-4">
               <span>Add: Purchases</span>
@@ -879,7 +978,9 @@ const FinancialReportPage = () => {
             </div>
             <div className="flex justify-between pl-4">
               <span>Less: Closing Inventory</span>
-              <span>KES {profitAndLoss.cogs.closingInventory.toLocaleString()}</span>
+              <span>
+                KES {profitAndLoss.cogs.closingInventory.toLocaleString()}
+              </span>
             </div>
             <div className="flex justify-between font-medium border-t pt-1">
               <span>Total Cost of Goods Sold</span>
@@ -899,33 +1000,54 @@ const FinancialReportPage = () => {
             </div>
             <div className="flex justify-between pl-4">
               <span>Rent</span>
-              <span>KES {profitAndLoss.operatingExpenses.rent.toLocaleString()}</span>
+              <span>
+                KES {profitAndLoss.operatingExpenses.rent.toLocaleString()}
+              </span>
             </div>
             <div className="flex justify-between pl-4">
               <span>Transport</span>
-              <span>KES {profitAndLoss.operatingExpenses.transport.toLocaleString()}</span>
+              <span>
+                KES {profitAndLoss.operatingExpenses.transport.toLocaleString()}
+              </span>
             </div>
             <div className="flex justify-between pl-4">
               <span>Salaries</span>
-              <span>KES {profitAndLoss.operatingExpenses.salaries.toLocaleString()}</span>
+              <span>
+                KES {profitAndLoss.operatingExpenses.salaries.toLocaleString()}
+              </span>
             </div>
             <div className="flex justify-between pl-4">
               <span>Marketing</span>
-              <span>KES {profitAndLoss.operatingExpenses.marketing.toLocaleString()}</span>
+              <span>
+                KES {profitAndLoss.operatingExpenses.marketing.toLocaleString()}
+              </span>
             </div>
             <div className="flex justify-between pl-4">
               <span>General Expenses</span>
-              <span>KES {profitAndLoss.operatingExpenses.generalExpenses.toLocaleString()}</span>
+              <span>
+                KES{" "}
+                {profitAndLoss.operatingExpenses.generalExpenses.toLocaleString()}
+              </span>
             </div>
+            <div className="flex justify-between">
+            <span>Add: Other Income</span>
+            <span>KES {financialSettings.otherIncome.toLocaleString()}</span>
+          </div>
             <div className="flex justify-between font-medium border-t pt-1">
               <span>Total Operating Expenses</span>
-              <span>KES {profitAndLoss.operatingExpenses.total.toLocaleString()}</span>
+              <span>
+                KES {profitAndLoss.operatingExpenses.total.toLocaleString()}
+              </span>
             </div>
           </div>
 
           <div className="flex justify-between font-bold text-lg border-t-2 pt-2">
             <span>NET PROFIT</span>
-            <span className={profitAndLoss.netProfit >= 0 ? "text-green-600" : "text-red-600"}>
+            <span
+              className={
+                profitAndLoss.netProfit >= 0 ? "text-green-600" : "text-red-600"
+              }
+            >
               KES {profitAndLoss.netProfit.toLocaleString()}
             </span>
           </div>
