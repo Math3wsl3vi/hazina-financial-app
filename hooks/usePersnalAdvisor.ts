@@ -12,7 +12,7 @@
         try {
           const q = query(
             collection(db, "advisors"), 
-            where("type", "==", "business") 
+            where("type", "==", "personal") 
           );
           const querySnapshot = await getDocs(q);
           const data = querySnapshot.docs.map((doc) => ({

@@ -1,5 +1,5 @@
-// app/admin/advisors/page.tsx
 "use client";
+
 import { useState } from "react";
 import { addDoc, collection } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { db } from "@/configs/firebaseConfig";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function AddAdvisorPage() {
   const [formData, setFormData] = useState({
@@ -20,7 +27,9 @@ export default function AddAdvisorPage() {
     languages: [""],
     bio: "",
     imageUrl: "",
+    type: "personal", // personal or business
   });
+
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,8 +40,9 @@ export default function AddAdvisorPage() {
         availability: generateDefaultAvailability(),
         createdAt: new Date().toISOString(),
       });
+
       toast.success("Advisor added successfully!");
-      router.push("/home-personal");
+      router.push("/home/home-personal");
     } catch (error) {
       toast.error("Error adding advisor");
       console.error(error);
@@ -40,7 +50,6 @@ export default function AddAdvisorPage() {
   };
 
   const generateDefaultAvailability = () => {
-    // Generate 30 days of availability
     const availability = [];
     const today = new Date();
 
@@ -49,13 +58,11 @@ export default function AddAdvisorPage() {
       date.setDate(date.getDate() + i);
 
       if (date.getDay() !== 0 && date.getDay() !== 6) {
-        // Skip weekends
         availability.push({
           date: date.toISOString().split("T")[0],
           slots: [
             { start: "09:00", end: "10:00", booked: false },
             { start: "10:00", end: "11:00", booked: false },
-            // Add more slots as needed
           ],
         });
       }
@@ -67,7 +74,24 @@ export default function AddAdvisorPage() {
     <div className="max-w-2xl mx-auto p-6 font-poppins">
       <h1 className="text-2xl font-bold mb-6 uppercase">Add New Advisor</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Form fields for all advisor properties */}
+        {/* Advisor Type */}
+        <div>
+          <Label>Advisor Type</Label>
+          <Select
+            value={formData.type}
+            onValueChange={(value) => setFormData({ ...formData, type: value })}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select advisor type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="personal">Personal</SelectItem>
+              <SelectItem value="business">Business</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Other Fields */}
         <div>
           <Label>Name</Label>
           <Input
@@ -91,6 +115,7 @@ export default function AddAdvisorPage() {
         <div>
           <Label>Experience</Label>
           <Input
+            type="number"
             value={formData.experience}
             onChange={(e) =>
               setFormData({ ...formData, experience: Number(e.target.value) })
@@ -112,7 +137,8 @@ export default function AddAdvisorPage() {
         <div>
           <Label>Rating</Label>
           <Input
-            value={formData.experience}
+            type="number"
+            value={formData.rating}
             onChange={(e) =>
               setFormData({ ...formData, rating: Number(e.target.value) })
             }
@@ -127,13 +153,12 @@ export default function AddAdvisorPage() {
           />
         </div>
         <div>
-          <Label>Image Url</Label>
+          <Label>Image URL</Label>
           <Input
             value={formData.imageUrl}
             onChange={(e) =>
               setFormData({ ...formData, imageUrl: e.target.value })
             }
-            required
           />
         </div>
 

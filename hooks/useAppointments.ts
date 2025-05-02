@@ -1,20 +1,27 @@
 import { useState, useEffect } from 'react';
-import { collection, query, where, onSnapshot, addDoc } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  addDoc,
+} from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 import { Appointment } from '@/lib/types';
 import { db } from '@/configs/firebaseConfig';
 
-export function useAppointments() {
+export function useAppointments(advisorType: 'personal' | 'business') {
   const { currentUser } = useAuth();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!currentUser) return;
+    if (!currentUser || !advisorType) return;
 
     const q = query(
       collection(db, 'appointments'),
-      where('userId', '==', currentUser.uid)
+      where('userId', '==', currentUser.uid),
+      where('advisorType', '==', advisorType)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -22,7 +29,7 @@ export function useAppointments() {
       snapshot.forEach((doc) => {
         appointmentsData.push({
           id: doc.id,
-          ...doc.data()
+          ...doc.data(),
         } as Appointment);
       });
       setAppointments(appointmentsData);
@@ -30,9 +37,11 @@ export function useAppointments() {
     });
 
     return () => unsubscribe();
-  }, [currentUser]);
+  }, [currentUser, advisorType]);
 
-  const bookAppointment = async (appointment: Omit<Appointment, 'id'>) => {
+  const bookAppointment = async (
+    appointment: Omit<Appointment, 'id'> & { advisorType: 'personal' | 'business' }
+  ) => {
     try {
       await addDoc(collection(db, 'appointments'), appointment);
     } catch (error) {

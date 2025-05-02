@@ -15,7 +15,7 @@ export default function Consultants() {
     appointments,
     loading: appointmentsLoading,
     bookAppointment,
-  } = useAppointments();
+  } = useAppointments("business"); // <-- pass advisorType here  
   const { loading: healthLoading } = useFinancialHealth();
   const [selectedAdvisor, setSelectedAdvisor] = useState<Advisor | null>(null);
 
@@ -34,13 +34,15 @@ export default function Consultants() {
       await bookAppointment({
         advisorId: selectedAdvisor.id,
         advisorName: selectedAdvisor.name,
-        userId: "current-user-id", 
+        userId: "current-user-id",
         date,
         time,
         notes,
         status: "scheduled",
         createdAt: new Date().toISOString(),
+        advisorType: "business", // <-- required field
       });
+      
       toast.success("Appointment booked successfully!");
       setSelectedAdvisor(null);
     } catch (error) {

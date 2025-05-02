@@ -2,9 +2,9 @@
 import AdvisorCard from "@/components/advisor/AdvisorCard";
 import BookingModal from "@/components/advisor/BookingModal";
 
-import { useAdvisors } from "@/hooks/useAdvisor";
 import { useAppointments } from "@/hooks/useAppointments";
 import { useFinancialHealth } from "@/hooks/useFinancialHealth";
+import { useAdvisors } from "@/hooks/usePersnalAdvisor";
 import { Advisor } from "@/lib/types";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
@@ -15,7 +15,8 @@ export default function AdvisorPage() {
     appointments,
     loading: appointmentsLoading,
     bookAppointment,
-  } = useAppointments();
+  } = useAppointments("personal"); 
+  
   const { loading: healthLoading } = useFinancialHealth();
   const [selectedAdvisor, setSelectedAdvisor] = useState<Advisor | null>(null);
 
@@ -31,16 +32,18 @@ export default function AdvisorPage() {
     if (!selectedAdvisor) return;
 
     try {
-      await bookAppointment({
-        advisorId: selectedAdvisor.id,
-        advisorName: selectedAdvisor.name,
-        userId: "current-user-id", // Will be replaced by auth context
-        date,
-        time,
-        notes,
-        status: "scheduled",
-        createdAt: new Date().toISOString(),
-      });
+        await bookAppointment({
+          advisorId: selectedAdvisor.id,
+          advisorName: selectedAdvisor.name,
+          userId: "current-user-id",
+          date,
+          time,
+          notes,
+          status: "scheduled",
+          createdAt: new Date().toISOString(),
+          advisorType: "personal", 
+        });
+        
       toast.success("Appointment booked successfully!");
       setSelectedAdvisor(null);
     } catch (error) {
