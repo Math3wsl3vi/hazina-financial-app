@@ -449,6 +449,39 @@ const FinancialReportPage = () => {
       console.error("Error saving settings:", error);
     }
   };
+  const resetAllValues = () => {
+    // Create a new settings object with all values reset to 0
+    const resetSettings: FinancialSettings = {
+      landAndBuilding: 0,
+      plantPropertyEquipment: 0,
+      cashInHand: 0,
+      inventory: 0,
+      debtors: 0,
+      creditors: 0,
+      bankOverdraft: 0,
+      mortgage: 0,
+      retainedEarnings: 0,
+      ownerCapital: 0,
+      incomeFromSales: 0,
+      salesRevenue: 0,
+      openingInventory: 0,
+      purchases: 0,
+      closingInventory: 0,
+      rent: 0,
+      transport: 0,
+      salaries: 0,
+      marketing: 0,
+      generalExpenses: 0,
+      otherIncome: 0,
+    };
+    
+    // Update the state with reset values
+    setFinancialSettings(resetSettings);
+    
+    // Show a success message
+    setSettingsSuccess("All values have been reset to zero.");
+    setTimeout(() => setSettingsSuccess(""), 3000);
+  };
 
   // Render UI
   if (!uid) {
@@ -1053,8 +1086,28 @@ const FinancialReportPage = () => {
           </div>
         </div>
       </div>
+      <div className="md:col-span-2">
+  {settingsError && (
+    <p className="text-red-500 text-sm">{settingsError}</p>
+  )}
+  {settingsSuccess && (
+    <p className="text-green-500 text-sm">{settingsSuccess}</p>
+  )}
+  <div className="flex gap-4 mt-4">
+    <Button type="submit" className="flex-1">
+      Save Settings
+    </Button>
+    <Button 
+      type="button" 
+      className="flex-1 bg-red-500 hover:bg-red-600" 
+      onClick={resetAllValues}
+    >
+      Reset All Values
+    </Button>
+  </div>
+</div>
 
-      <div className="h-20"></div>
+      <div className="h-[10px]"></div>
     </div>
   );
 };
