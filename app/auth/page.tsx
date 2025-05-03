@@ -9,7 +9,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import type { User } from "firebase/auth";
-import { auth } from "@/configs/firebaseConfig";
+import { auth, db } from "@/configs/firebaseConfig";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import {
   Card,
@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { doc, setDoc } from "firebase/firestore";
 
 const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(false);
@@ -57,10 +58,20 @@ const LoginPage = () => {
       if (!isLogin) {
         userCredential = await createUserWithEmailAndPassword(auth, email, password);
       
-        // ✅ Save the display name to Firebase Auth
+        // Save the display name to Firebase Auth
         await updateProfile(userCredential.user, {
           displayName: name,
         });
+      
+        // Save user to Firestore
+        await setDoc(doc(db, "users", userCredential.user.uid), {
+          uid: userCredential.user.uid,
+          email: userCredential.user.email,
+          name,
+          createdAt: new Date().toISOString()
+        });
+  
+        
       } else {
         userCredential = await signInWithEmailAndPassword(auth, email, password);
       }

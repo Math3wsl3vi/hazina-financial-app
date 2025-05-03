@@ -34,7 +34,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} bg-white`}>
-        <Navbar />
+       <div className="mb-20">
+       <Navbar />
+       </div>
         <Sidebar />
 
         {/* Main layout container with sidebar margin on md+ screens and bottom margin on mobile */}

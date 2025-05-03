@@ -843,7 +843,7 @@ const FinancialReportPage = () => {
       </div>
 
       {/* Balance Sheet Report */}
-      <div className="mb-8 bg-green-50 p-6 rounded-lg shadow">
+      <div className="mb-8 bg-green-50 p-6 rounded-lg shadow ">
         <h2 className="text-xl font-semibold mb-4">Balance Sheet</h2>
         <div className="space-y-4">
           {/* Assets */}

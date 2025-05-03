@@ -80,6 +80,7 @@ export interface Advisor {
   availability: Availability[];
   bio: string;
   imageUrl: string;
+  advisorType:string
   }
   
   export interface Availability {
