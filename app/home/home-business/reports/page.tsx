@@ -396,8 +396,9 @@ const FinancialReportPage = () => {
         financialSettings.generalExpenses,
     };
 
+    const operatingProfit = grossProfit - operatingExpenses.total
     const netProfit =
-      grossProfit + financialSettings.otherIncome - operatingExpenses.total;
+      operatingProfit + financialSettings.otherIncome - operatingExpenses.total;
 
     return {
       salesRevenue,
@@ -410,6 +411,7 @@ const FinancialReportPage = () => {
       grossProfit,
       operatingExpenses,
       netProfit,
+      operatingProfit
     };
   };
 
@@ -1062,16 +1064,14 @@ const FinancialReportPage = () => {
                 {profitAndLoss.operatingExpenses.generalExpenses.toLocaleString()}
               </span>
             </div>
+            <div className="flex justify-between font-medium border-t pt-2">
+            <span>Operating Profit</span>
+            <span>KES {profitAndLoss.operatingProfit.toLocaleString()}</span>
+          </div>
             <div className="flex justify-between">
             <span>Add: Other Income</span>
             <span>KES {financialSettings.otherIncome.toLocaleString()}</span>
           </div>
-            <div className="flex justify-between font-medium border-t pt-1">
-              <span>Total Operating Expenses</span>
-              <span>
-                KES {profitAndLoss.operatingExpenses.total.toLocaleString()}
-              </span>
-            </div>
           </div>
 
           <div className="flex justify-between font-bold text-lg border-t-2 pt-2">
