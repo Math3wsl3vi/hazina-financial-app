@@ -17,7 +17,7 @@ export const UserTable = () => {
   const [users, setUsers] = useState<User[]>([]);
 
   const fetchUsers = async () => {
-    const querySnapshot = await getDocs(collection(db, "users"));
+    const querySnapshot = await getDocs(collection(db, "Users"));
     const usersData = querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
@@ -26,7 +26,7 @@ export const UserTable = () => {
   };
 
   const deleteUser = async (userId: string) => {
-    await deleteDoc(doc(db, "users", userId));
+    await deleteDoc(doc(db, "Users", userId));
     fetchUsers(); // refresh
   };
 

@@ -64,7 +64,7 @@ const LoginPage = () => {
         });
       
         // Save user to Firestore
-        await setDoc(doc(db, "users", userCredential.user.uid), {
+        await setDoc(doc(db, "Users", userCredential.user.uid), {
           uid: userCredential.user.uid,
           email: userCredential.user.email,
           name,
