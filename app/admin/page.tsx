@@ -44,7 +44,7 @@ const AdminPage = () => {
         </Button>
         <Button
           className="w-full md:w-1/4 bg-green-1 hover:bg-green-700"
-          onClick={() => router.push("/admin/snapshot")}
+          onClick={() => router.push("/admin/appointments")}
         >
           Appointments
         </Button>
