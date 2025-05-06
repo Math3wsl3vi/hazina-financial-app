@@ -75,7 +75,7 @@ export default function Consultants() {
       const newAppointment = {
         advisorId: selectedAdvisor.id,
         advisorName: selectedAdvisor.name,
-        userId: "current-user-id",
+        uid: "current-user-id",
         date,
         time,
         notes,
