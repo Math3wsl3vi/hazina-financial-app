@@ -136,7 +136,7 @@ export default function Consultants() {
             Hazina Advisor Hub
           </h1>
           <p className="mt-2 text-lg text-gray-600">
-            Get personalized advice from certified financial experts
+            Get personalized advice from certified financial advisors
           </p>
         </div>
 
