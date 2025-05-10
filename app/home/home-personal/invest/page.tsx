@@ -1,13 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import { collection, onSnapshot, orderBy, query, limit } from "firebase/firestore";
 import { db } from "@/configs/firebaseConfig";
-
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import InvestmentsPage from "@/components/invest/InvestPage";
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 interface Snapshot {
@@ -19,28 +18,31 @@ interface Snapshot {
 }
 
 export default function InvestmentPage() {
-  const router = useRouter()
-
-  const [loading, setLoading]   = useState(true);
-  const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [snapshot, setSnapshot] = useState<Snapshot | null>(null); // Change to single snapshot
 
   useEffect(() => {
-    // live listener keeps page real-time
-    const q   = query(
+    const q = query(
       collection(db, "marketSnapshots"),
-      orderBy("createdAt", "desc")
+      orderBy("createdAt", "desc"),
+      limit(1) // Fetch only the latest document
     );
     const off = onSnapshot(
       q,
       (qs) => {
-        const list = qs.docs.map((d) => ({
-          id: d.id,
-          title: d.data().title,
-          content: d.data().content,
-          author: d.data().author,
-          createdAt: d.data().createdAt?.toDate(),
-        }));
-        setSnapshots(list);
+        if (!qs.empty) {
+          const doc = qs.docs[0];
+          setSnapshot({
+            id: doc.id,
+            title: doc.data().title,
+            content: doc.data().content,
+            author: doc.data().author,
+            createdAt: doc.data().createdAt?.toDate(),
+          });
+        } else {
+          setSnapshot(null);
+        }
         setLoading(false);
       },
       (err) => {
@@ -48,14 +50,12 @@ export default function InvestmentPage() {
         setLoading(false);
       }
     );
-    return () => off();        // cleanup on unmount
+    return () => off();
   }, []);
 
   return (
     <div className="container mx-auto py-8 px-4 font-poppins">
-      <h1 className="text-3xl font-bold text-center mb-8">
-        Investment Options
-      </h1>
+      <h1 className="text-3xl font-bold text-center mb-8">Investment Options</h1>
 
       <Tabs defaultValue="local" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
@@ -66,81 +66,46 @@ export default function InvestmentPage() {
         {/* Local Investments Tab */}
         <TabsContent value="local">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-            {/* Low Risk Card */}
             <Card className="bg-green-50">
               <CardHeader>
-                <CardTitle className="text-green-600">
-                  Low Risk (1-3%)
-                </CardTitle>
+                <CardTitle className="text-green-600">Low Risk (1-3%)</CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
-                  <li className="flex items-center">
-                    <span className="mr-2">•</span> Money market funds
-                  </li>
-                  <li className="flex items-center">
-                    <span className="mr-2">•</span> Treasury bill
-                  </li>
-                  <li className="flex items-center">
-                    <span className="mr-2">•</span> Treasury bonds
-                  </li>
-                  <li className="flex items-center">
-                    <span className="mr-2">•</span> Commercial papers
-                  </li>
+                  <li className="flex items-center"><span className="mr-2">•</span> Money market funds</li>
+                  <li className="flex items-center"><span className="mr-2">•</span> Treasury bill</li>
+                  <li className="flex items-center"><span className="mr-2">•</span> Treasury bonds</li>
+                  <li className="flex items-center"><span className="mr-2">•</span> Commercial papers</li>
                 </ul>
-                <Button 
-                onClick={()=>router.push('/home/home-personal/InvestmentOptions')}
-                className="mt-4 w-full">Explore Low Risk</Button>
+                <Button onClick={() => router.push('/home/home-personal/InvestmentOptions')} className="mt-4 w-full">Explore Low Risk</Button>
               </CardContent>
             </Card>
 
-            {/* Medium Risk Card */}
             <Card className="bg-yellow-50">
               <CardHeader>
-                <CardTitle className="text-yellow-600">
-                  Medium Risk (4-7%)
-                </CardTitle>
+                <CardTitle className="text-yellow-600">Medium Risk (4-7%)</CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
-                  <li className="flex items-center">
-                    <span className="mr-2">•</span> Fixed Income Funds
-                  </li>
-                  <li className="flex items-center">
-                    <span className="mr-2">•</span> Balanced Fund
-                  </li>
-                  <li className="flex items-center">
-                    <span className="mr-2">•</span> Corporate bonds
-                  </li>
+                  <li className="flex items-center"><span className="mr-2">•</span> Fixed Income Funds</li>
+                  <li className="flex items-center"><span className="mr-2">•</span> Balanced Fund</li>
+                  <li className="flex items-center"><span className="mr-2">•</span> Corporate bonds</li>
                 </ul>
-                <Button 
-                onClick={()=>router.push('/home/home-personal/InvestmentOptions')}
-                className="mt-4 w-full">Explore Medium Risk</Button>
+                <Button onClick={() => router.push('/home/home-personal/InvestmentOptions')} className="mt-4 w-full">Explore Medium Risk</Button>
               </CardContent>
             </Card>
 
-            {/* High Risk Card */}
             <Card className="bg-red-50">
               <CardHeader>
-                <CardTitle className="text-red-600">
-                  High Risk (8-15%)
-                </CardTitle>
+                <CardTitle className="text-red-600">High Risk (8-15%)</CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
-                  <li className="flex items-center">
-                    <span className="mr-2">•</span> Equities
-                  </li>
-                  <li className="flex items-center">
-                    <span className="mr-2">•</span> Sector-specific Funds
-                  </li>
-                  <li className="flex items-center">
-                    <span className="mr-2">•</span> Growth-oriented Unit Funds
-                  </li>
+                  <li className="flex items-center"><span className="mr-2">•</span> Equities</li>
+                  <li className="flex items-center"><span className="mr-2">•</span> Sector-specific Funds</li>
+                  <li className="flex items-center"><span className="mr-2">•</span> Growth-oriented Unit Funds</li>
                 </ul>
-                <Button 
-                onClick={()=>router.push('/home/home-personal/InvestmentOptions')}
-                className="mt-4 w-full">Explore High Risk</Button>
+                <Button onClick={() => router.push('/home/home-personal/InvestmentOptions')} className="mt-4 w-full">Explore High Risk</Button>
               </CardContent>
             </Card>
           </div>
@@ -149,78 +114,47 @@ export default function InvestmentPage() {
         {/* Global Investments Tab */}
         <TabsContent value="global">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-            {/* HAZING POND Card */}
             <Card className="bg-green-50">
               <CardHeader>
                 <CardTitle>Low risk investments</CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
-                  <li className="flex items-center">
-                    <span className="mr-2">•</span> Money market fund(EUR/USD)
-                  </li>
-                  <li className="flex items-center">
-                    <span className="mr-2">•</span> US Treasury Bills
-                  </li>
-                  <li className="flex items-center">
-                    <span className="mr-2">•</span> German bunds
-                  </li>
-                  <li className="flex items-center">
-                    <span className="mr-2">•</span> High-Grade Corporate Bonds
-                  </li>
+                  <li className="flex items-center"><span className="mr-2">•</span> Money market fund(EUR/USD)</li>
+                  <li className="flex items-center"><span className="mr-2">•</span> US Treasury Bills</li>
+                  <li className="flex items-center"><span className="mr-2">•</span> German bunds</li>
+                  <li className="flex items-center"><span className="mr-2">•</span> High-Grade Corporate Bonds</li>
                 </ul>
-                <Button 
-                onClick={()=>router.push('/home/home-personal/InvestmentOptions')}
-                className="mt-4 w-full">Learn More</Button>
+                <Button onClick={() => router.push('/home/home-personal/InvestmentOptions')} className="mt-4 w-full">Learn More</Button>
               </CardContent>
             </Card>
 
-            {/* Industrial Investment Card */}
             <Card className="bg-yellow-50">
               <CardHeader>
                 <CardTitle>Medium risk investments</CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
-                  <li className="flex items-center">
-                    <span className="mr-2">•</span> Diversified Bond ETFs
-                  </li>
-                  <li className="flex items-center">
-                    <span className="mr-2">•</span> Real Estate ETFs
-                  </li>
-                  <li className="flex items-center">
-                    <span className="mr-2">•</span> Index funds
-                  </li>
+                  <li className="flex items-center"><span className="mr-2">•</span> Diversified Bond ETFs</li>
+                  <li className="flex items-center"><span className="mr-2">•</span> Real Estate ETFs</li>
+                  <li className="flex items-center"><span className="mr-2">•</span> Index funds</li>
                 </ul>
-                <Button 
-                onClick={()=>router.push('/home/home-personal/InvestmentOptions')}
-                className="mt-4 w-full">Learn More</Button>
+                <Button onClick={() => router.push('/home/home-personal/InvestmentOptions')} className="mt-4 w-full">Learn More</Button>
               </CardContent>
             </Card>
 
-            {/* SCOP II Card */}
             <Card className="bg-red-50">
               <CardHeader>
                 <CardTitle>High risk investments</CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
-                  <li className="flex items-center">
-                    <span className="mr-2">•</span> Emerging market ETFs
-                  </li>
-                  <li className="flex items-center">
-                    <span className="mr-2">•</span> Crypto currency
-                  </li>
-                  <li className="flex items-center">
-                    <span className="mr-2">•</span> Tech-focused ETFs
-                  </li>
-                  <li className="flex items-center">
-                    <span className="mr-2">•</span> Single stock investing
-                  </li>
+                  <li className="flex items-center"><span className="mr-2">•</span> Emerging market ETFs</li>
+                  <li className="flex items-center"><span className="mr-2">•</span> Crypto currency</li>
+                  <li className="flex items-center"><span className="mr-2">•</span> Tech-focused ETFs</li>
+                  <li className="flex items-center"><span className="mr-2">•</span> Single stock investing</li>
                 </ul>
-                <Button 
-                onClick={()=>router.push('/home/home-personal/InvestmentOptions')}
-                className="mt-4 w-full">Learn More</Button>
+                <Button onClick={() => router.push('/home/home-personal/InvestmentOptions')} className="mt-4 w-full">Learn More</Button>
               </CardContent>
             </Card>
           </div>
@@ -229,45 +163,37 @@ export default function InvestmentPage() {
 
       {/* Portfolio Section */}
       <div className="mt-12">
-        <h2 className="text-2xl font-bold mb-6">Today’s Market Snapshots</h2>
+        <h2 className="text-2xl font-bold mb-6">Today’s Market Snapshot</h2>
 
         {loading ? (
-          <p>Loading snapshots…</p>
-        ) : snapshots.length === 0 ? (
+          <p>Loading snapshot…</p>
+        ) : !snapshot ? (
           <p className="text-gray-500">No market updates yet.</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {snapshots.map((s) => (
-              <Card key={s.id} className="hover:shadow-lg transition flex w-full justify-between cursor-pointer">
-              <div className="flex-1 w-2/3 p-4">
-                <CardHeader className="p-0 mb-2">
-                  <CardTitle className="text-lg">{s.title}</CardTitle>
-                  <p className="text-xs text-gray-500">
-                    By {s.author} &middot; {s.createdAt?.toLocaleDateString()}
-                  </p>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <p className="whitespace-pre-wrap text-sm capitalize">{s.content}</p>
-                </CardContent>
-              </div>
-            
-              {/* Market Illustration */}
-              <div className="w-1/3 md:w-40 flex justify-center items-center p-4">
-                <Image
-                  src="/images/bull.png"
-                  alt="Market illustration"
-                  width={300}
-                  height={300}
-                  className="w-full h-auto object-cover rounded-md"
-                />
-              </div>
-            </Card>
-            
-            ))}
-          </div>
+          <Card className="hover:shadow-lg transition flex w-full justify-between cursor-pointer">
+            <div className="flex-1 w-2/3 p-4">
+              <CardHeader className="p-0 mb-2">
+                <CardTitle className="text-lg">{snapshot.title}</CardTitle>
+                <p className="text-xs text-gray-500">
+                  By {snapshot.author} · {snapshot.createdAt?.toLocaleDateString()}
+                </p>
+              </CardHeader>
+              <CardContent className="p-0">
+                <p className="whitespace-pre-wrap text-sm capitalize">{snapshot.content}</p>
+              </CardContent>
+            </div>
+            <div className="w-1/3 md:w-40 flex justify-center items-center p-4">
+              <Image
+                src="/images/bull.png"
+                alt="Market illustration"
+                width={300}
+                height={300}
+                className="w-full h-auto object-cover rounded-md"
+              />
+            </div>
+          </Card>
         )}
       </div>
-
 
       <InvestmentsPage />
       <div className=""></div>
