@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect } from 'react';
 import { collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '@/configs/firebaseConfig';
@@ -38,7 +39,7 @@ interface InventoryRecord {
   quantity: number;
   price: number;
   note: string;
-  createdAt: Timestamp;
+  createdAt?: Timestamp;
 }
 
 interface PayrollRecord {
@@ -46,7 +47,7 @@ interface PayrollRecord {
   name: string;
   salaryAmount: number;
   note: string;
-  createdAt: Timestamp;
+  createdAt?: Timestamp;
 }
 
 const InventoryPayrollPage = () => {
@@ -82,9 +83,7 @@ const InventoryPayrollPage = () => {
   const [streak, setStreak] = useState<number>(0);
   const [streakBroken, setStreakBroken] = useState<boolean>(false);
   const [streakHistory, setStreakHistory] = useState<StreakRecord[]>([]);
-  console.log(streak)
-  console.log(streakBroken)
-  console.log(streakHistory)
+  console.log(streak,streakBroken,streakHistory)
 
   // Fetch inventory, payroll, and streak records for the specific user
   useEffect(() => {
@@ -194,6 +193,18 @@ const InventoryPayrollPage = () => {
     const newStreakRecord: StreakRecord = { date: today };
     await addDoc(collection(db, `users/${uid}/streakRecords`), newStreakRecord);
   };
+
+  // Helper function to format Timestamp to readable date
+ const formatDate = (timestamp: Timestamp | null | undefined) => {
+     if (!timestamp) {
+       return "No date";
+     }
+     return timestamp.toDate().toLocaleDateString('en-US', {
+       month: 'short',
+       day: 'numeric',
+       year: 'numeric'
+     });
+   };
 
   // Function to handle adding inventory "In"
   const handleAddIn = async (e: React.FormEvent) => {
@@ -437,11 +448,14 @@ const InventoryPayrollPage = () => {
                   key={record.id}
                   className="flex flex-col p-2 bg-green-50 rounded-md text-sm"
                 >
-                  <div className="flex justify-between">
-                    <span>{record.name}</span>
+                  <div className="flex justify-between items-center">
+                    <div className="flex-1">
+                      <span>{record.name}</span>
+                      <p className="text-xs text-gray-500">{formatDate(record.createdAt)}</p>
+                    </div>
                     <span>KES {record.price.toFixed(2)}</span>
                   </div>
-                  <div className="text-gray-600">
+                  <div className="text-gray-600 mt-1">
                     <span>Qty: {record.quantity} | Note: {record.note}</span>
                   </div>
                 </li>
@@ -527,11 +541,14 @@ const InventoryPayrollPage = () => {
                   key={record.id}
                   className="flex flex-col p-2 bg-red-50 rounded-md text-sm"
                 >
-                  <div className="flex justify-between">
-                    <span>{record.name}</span>
+                  <div className="flex justify-between items-center">
+                    <div className="flex-1">
+                      <span>{record.name}</span>
+                      <p className="text-xs text-gray-500">{formatDate(record.createdAt)}</p>
+                    </div>
                     <span>KES {record.price.toFixed(2)}</span>
                   </div>
-                  <div className="text-gray-600">
+                  <div className="text-gray-600 mt-1">
                     <span>Qty: {record.quantity} | Note: {record.note}</span>
                   </div>
                 </li>
@@ -606,11 +623,14 @@ const InventoryPayrollPage = () => {
                     key={record.id}
                     className="flex flex-col p-2 bg-blue-50 rounded-md text-sm"
                   >
-                    <div className="flex justify-between">
-                      <span>{record.name}</span>
+                    <div className="flex justify-between items-center">
+                      <div className="flex-1">
+                        <span>{record.name}</span>
+                        <p className="text-xs text-gray-500">{formatDate(record.createdAt)}</p>
+                      </div>
                       <span>KES {record.salaryAmount.toFixed(2)}</span>
                     </div>
-                    <div className="text-gray-600">
+                    <div className="text-gray-600 mt-1">
                       <span>Note: {record.note}</span>
                     </div>
                   </li>

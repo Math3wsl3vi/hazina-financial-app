@@ -16,7 +16,7 @@ const Navbar = () => {
       };
     
   return (
-    <div className='flex items-center justify-between md:px-10 px-5 py-5 bg-slate-50 fixed w-full top-0'>
+    <div className='flex items-center justify-between md:px-10 px-5 py-5 bg-slate-50 fixed w-full top-0 z-50'>
        <Link href='/home' className='text-lg'>H A Z I N A</Link>
        <div 
        className='border rounded-md border-gray-300 p-1 px-2 cursor-pointer'

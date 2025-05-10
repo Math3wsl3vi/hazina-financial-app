@@ -13,7 +13,7 @@ interface FinancialRecord {
   type: 'income' | 'expense';
   note: string;
   amount: number;
-  createdAt: Timestamp;
+  createdAt?: Timestamp;
   userId: string;
 }
 
@@ -36,9 +36,9 @@ const TrackerPage = () => {
 
   useEffect(() => {
     if (authLoading) return;
-    
+
     console.log("Auth state:", currentUser ? `User: ${currentUser.uid}` : "No user");
-    
+
     if (!currentUser) {
       setLoading(false);
       return;
@@ -52,10 +52,10 @@ const TrackerPage = () => {
       );
 
       console.log("Setting up Firebase listener for:", currentUser.uid);
-      
+
       const unsubscribe = onSnapshot(recordsQuery, (snapshot) => {
         console.log(`Received ${snapshot.docs.length} records from Firestore`);
-        
+
         const records: FinancialRecord[] = snapshot.docs.map((doc) => {
           const data = doc.data();
           return {
@@ -70,9 +70,9 @@ const TrackerPage = () => {
 
         const incomes = records.filter((record) => record.type === 'income');
         const expenses = records.filter((record) => record.type === 'expense');
-        
+
         console.log(`Filtered ${incomes.length} income records and ${expenses.length} expense records`);
-        
+
         setIncomeRecords(incomes);
         setExpenseRecords(expenses);
         setLoading(false);
@@ -114,7 +114,7 @@ const TrackerPage = () => {
 
     try {
       console.log("Adding income record:", { note: incomeNote, amount });
-      
+
       await addDoc(collection(db, 'financialRecords'), {
         type: 'income',
         note: incomeNote,
@@ -122,7 +122,7 @@ const TrackerPage = () => {
         userId: currentUser.uid,
         createdAt: serverTimestamp(),
       });
-      
+
       setIncomeSuccess('Income added successfully!');
       setIncomeNote('');
       setIncomeAmount('');
@@ -155,7 +155,7 @@ const TrackerPage = () => {
 
     try {
       console.log("Adding expense record:", { note: expenseNote, amount });
-      
+
       await addDoc(collection(db, 'financialRecords'), {
         type: 'expense',
         note: expenseNote,
@@ -163,7 +163,7 @@ const TrackerPage = () => {
         userId: currentUser.uid,
         createdAt: serverTimestamp(),
       });
-      
+
       setExpenseSuccess('Expense added successfully!');
       setExpenseNote('');
       setExpenseAmount('');
@@ -175,13 +175,25 @@ const TrackerPage = () => {
 
   const handleDeleteRecord = async (recordId: string) => {
     if (!currentUser) return;
-    
+
     try {
       console.log("Deleting record:", recordId);
       await deleteDoc(doc(db, 'financialRecords', recordId));
     } catch (error) {
       console.error('Error deleting record:', error);
     }
+  };
+
+  // Helper function to format Timestamp to readable date
+  const formatDate = (timestamp: Timestamp | null | undefined) => {
+    if (!timestamp) {
+      return "No date";
+    }
+    return timestamp.toDate().toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
   };
 
   if (authLoading || loading) {
@@ -211,7 +223,7 @@ const TrackerPage = () => {
     <div className="p-5 max-w-md mx-auto font-poppins">
       {/* Income Section */}
       <div className="mb-8">
-        <h2 className="font-poppins text-xl font-semibold mb-4">Income(e.g. Sales Revenue)</h2>
+        <h2 className="font-poppins text-xl font-semibold mb-4">Income (e.g., Sales Revenue)</h2>
         <form onSubmit={handleAddIncome} className="space-y-4">
           <div>
             <Label htmlFor="incomeNote" className="block text-sm font-medium">
@@ -260,10 +272,15 @@ const TrackerPage = () => {
               {incomeRecords.map((record) => (
                 <li
                   key={record.id}
-                  className="flex justify-between items-center p-2 bg-green-50 rounded-md"
+                  className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-2 bg-green-50 rounded-md"
                 >
-                  <span className="text-sm">{record.note || "Unnamed"}</span>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex-1">
+                    <span className="text-sm">{record.note || "Unnamed"}</span>
+                    <p className="text-xs text-gray-500">
+                      {formatDate(record.createdAt)}
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-2 mt-2 sm:mt-0">
                     <span className="text-sm font-semibold">
                       KES {(record.amount || 0).toFixed(2)}
                     </span>
@@ -284,7 +301,7 @@ const TrackerPage = () => {
 
       {/* Expense Section */}
       <div>
-        <h2 className="font-poppins text-xl font-semibold mb-4">Expense(e.g. Advertising Cost)</h2>
+        <h2 className="font-poppins text-xl font-semibold mb-4">Expense (e.g., Advertising Cost)</h2>
         <form onSubmit={handleAddExpense} className="space-y-4">
           <div>
             <Label htmlFor="expenseNote" className="block text-sm font-medium">
@@ -333,10 +350,15 @@ const TrackerPage = () => {
               {expenseRecords.map((record) => (
                 <li
                   key={record.id}
-                  className="flex justify-between items-center p-2 bg-red-50 rounded-md"
+                  className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-2 bg-red-50 rounded-md"
                 >
-                  <span className="text-sm">{record.note || "Unnamed"}</span>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex-1">
+                    <span className="text-sm">{record.note || "Unnamed"}</span>
+                    <p className="text-xs text-gray-500">
+                      {formatDate(record.createdAt)}
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-2 mt-2 sm:mt-0">
                     <span className="text-sm font-semibold">
                       KES {(record.amount || 0).toFixed(2)}
                     </span>
