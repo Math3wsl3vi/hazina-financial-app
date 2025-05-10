@@ -16,7 +16,7 @@ export default function Home() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        router.push('/')
+        router.push('/home')
       }
       setLoading(false)
     })
@@ -256,10 +256,8 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center mb-6 md:mb-0">
-              <div className="bg-gradient-to-br from-blue-600 to-indigo-700 w-8 h-8 rounded-lg flex items-center justify-center shadow-sm">
-                <span className="text-white font-bold text-sm">H</span>
-              </div>
-              <h2 className="ml-2 text-lg font-bold bg-gradient-to-r from-blue-700 to-indigo-600 bg-clip-text text-transparent">Hazina</h2>
+             
+              <h2 className="ml-2 text-lg font-bold bg-gradient-to-r from-blue-700 to-indigo-600 bg-clip-text text-transparent">H A Z I N A</h2>
             </div>
             <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-600">
               <a href="#" className="hover:text-blue-700">Privacy</a>
