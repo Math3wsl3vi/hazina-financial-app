@@ -223,7 +223,7 @@ const TrackerPage = () => {
     <div className="p-5 max-w-md mx-auto font-poppins">
       {/* Income Section */}
       <div className="mb-8">
-        <h2 className="font-poppins text-xl font-semibold mb-4">Income (e.g., Sales Revenue)</h2>
+        <h2 className="font-poppins text-xl font-semibold mb-4">Income</h2>
         <form onSubmit={handleAddIncome} className="space-y-4">
           <div>
             <Label htmlFor="incomeNote" className="block text-sm font-medium">
@@ -235,7 +235,7 @@ const TrackerPage = () => {
               value={incomeNote}
               onChange={(e) => setIncomeNote(e.target.value)}
               className="w-full"
-              placeholder="Enter note (e.g., Salary)"
+              placeholder="Enter note (e.g., Revenue)"
             />
           </div>
           <div>
@@ -301,7 +301,7 @@ const TrackerPage = () => {
 
       {/* Expense Section */}
       <div>
-        <h2 className="font-poppins text-xl font-semibold mb-4">Expense (e.g., Advertising Cost)</h2>
+        <h2 className="font-poppins text-xl font-semibold mb-4">Expense </h2>
         <form onSubmit={handleAddExpense} className="space-y-4">
           <div>
             <Label htmlFor="expenseNote" className="block text-sm font-medium">
@@ -313,7 +313,7 @@ const TrackerPage = () => {
               value={expenseNote}
               onChange={(e) => setExpenseNote(e.target.value)}
               className="w-full"
-              placeholder="Enter note (e.g., Groceries)"
+              placeholder="Enter note (e.g., Advertising Cost)"
             />
           </div>
           <div>
