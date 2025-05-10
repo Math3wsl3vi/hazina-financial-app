@@ -1,14 +1,56 @@
 "use client";
+import { useEffect, useState } from "react";
+import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import { db } from "@/configs/firebaseConfig";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import InvestmentsPage from "@/components/invest/InvestPage";
-import SnapshotCard from "@/components/invest/Snapshot";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation"
+import Image from "next/image";
+
+interface Snapshot {
+  id: string;
+  title: string;
+  content: string;
+  author: string;
+  createdAt?: Date;
+}
 
 export default function InvestmentPage() {
   const router = useRouter()
+
+  const [loading, setLoading]   = useState(true);
+  const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
+
+  useEffect(() => {
+    // live listener keeps page real-time
+    const q   = query(
+      collection(db, "marketSnapshots"),
+      orderBy("createdAt", "desc")
+    );
+    const off = onSnapshot(
+      q,
+      (qs) => {
+        const list = qs.docs.map((d) => ({
+          id: d.id,
+          title: d.data().title,
+          content: d.data().content,
+          author: d.data().author,
+          createdAt: d.data().createdAt?.toDate(),
+        }));
+        setSnapshots(list);
+        setLoading(false);
+      },
+      (err) => {
+        console.error("snapshot fetch error", err);
+        setLoading(false);
+      }
+    );
+    return () => off();        // cleanup on unmount
+  }, []);
+
   return (
     <div className="container mx-auto py-8 px-4 font-poppins">
       <h1 className="text-3xl font-bold text-center mb-8">
@@ -187,26 +229,45 @@ export default function InvestmentPage() {
 
       {/* Portfolio Section */}
       <div className="mt-12">
-        <h2 className="text-2xl font-bold mb-6">Your Portfolio</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <SnapshotCard
-            indexName="NI225"
-            indexLabel="Japan 225 Index"
-            price="36,045.16"
-            changePercent={0.57}
-          />
+        <h2 className="text-2xl font-bold mb-6">Today’s Market Snapshots</h2>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Your Watchlist</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>Track your favorite investment options</p>
-              <Button className="mt-4 w-full">View Watchlist</Button>
-            </CardContent>
-          </Card>
-        </div>
+        {loading ? (
+          <p>Loading snapshots…</p>
+        ) : snapshots.length === 0 ? (
+          <p className="text-gray-500">No market updates yet.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {snapshots.map((s) => (
+              <Card key={s.id} className="hover:shadow-lg transition flex w-full justify-between cursor-pointer">
+              <div className="flex-1 w-2/3 p-4">
+                <CardHeader className="p-0 mb-2">
+                  <CardTitle className="text-lg">{s.title}</CardTitle>
+                  <p className="text-xs text-gray-500">
+                    By {s.author} &middot; {s.createdAt?.toLocaleDateString()}
+                  </p>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <p className="whitespace-pre-wrap text-sm capitalize">{s.content}</p>
+                </CardContent>
+              </div>
+            
+              {/* Market Illustration */}
+              <div className="w-1/3 md:w-40 flex justify-center items-center p-4">
+                <Image
+                  src="/images/bull.png"
+                  alt="Market illustration"
+                  width={300}
+                  height={300}
+                  className="w-full h-auto object-cover rounded-md"
+                />
+              </div>
+            </Card>
+            
+            ))}
+          </div>
+        )}
       </div>
+
 
       <InvestmentsPage />
       <div className=""></div>
