@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { addDoc, collection, query, where, onSnapshot } from "firebase/firestore";
+import { useState } from "react";
+import { addDoc, collection } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,23 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-
-// Interface for appointment data in Firestore
-interface Appointment {
-  id: string;
-  advisorId: string;
-  advisorName: string;
-  advisorType: 'business' | 'personal';
-  createdAt: string;
-  date: string;
-  notes?: string;
-  status: 'scheduled' | 'completed' | 'cancelled';
-  time: string;
-  uid: string;
-  userEmail?: string; // Added to store user email
-  userName?: string; // Added to store user name
-}
 
 export default function AddAdvisorPage() {
   const [formData, setFormData] = useState({
@@ -47,32 +30,7 @@ export default function AddAdvisorPage() {
     type: "personal", // personal or business
   });
 
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [actionError, setActionError] = useState<string | null>(null);
-
   const router = useRouter();
-
-  // Fetch scheduled appointments from Firestore
-  useEffect(() => {
-    const appointmentsQuery = query(
-      collection(db, 'appointments'),
-      where('status', '==', 'scheduled')
-    );
-
-    const unsubscribe = onSnapshot(appointmentsQuery, (snapshot) => {
-      const appointmentData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Appointment[];
-      setAppointments(appointmentData);
-    }, (error) => {
-      console.error('Error fetching scheduled appointments:', error);
-      setActionError('Failed to load scheduled appointments. Please try again.');
-    });
-
-    // Cleanup subscription on unmount
-    return () => unsubscribe();
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,7 +71,7 @@ export default function AddAdvisorPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 font-poppins">
+    <div className="max-w-2xl mx-auto p-6 font-poppins">
       <h1 className="text-2xl font-bold mb-6 uppercase">Add New Advisor</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Advisor Type */}
@@ -206,60 +164,6 @@ export default function AddAdvisorPage() {
 
         <Button type="submit">Add Advisor</Button>
       </form>
-
-      {/* Scheduled Appointments Table */}
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">Scheduled Appointments</h2>
-        {appointments.length === 0 ? (
-          <p className="text-gray-500">No scheduled appointments found.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Advisor</TableHead>
-                  <TableHead>User Name</TableHead>
-                  <TableHead>User Email</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Time</TableHead>
-                  <TableHead>Notes</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {appointments.map((appointment) => (
-                  <TableRow key={appointment.id}>
-                    <TableCell>{appointment.advisorName}</TableCell>
-                    <TableCell>{appointment.userName || 'N/A'}</TableCell>
-                    <TableCell>{appointment.userEmail || 'N/A'}</TableCell>
-                    <TableCell>{new Date(appointment.date).toLocaleDateString()}</TableCell>
-                    <TableCell>{appointment.time}</TableCell>
-                    <TableCell>{appointment.notes || 'N/A'}</TableCell>
-                    <TableCell>
-                      <span
-                        className={
-                          appointment.status === 'scheduled'
-                            ? 'text-green-600'
-                            : appointment.status === 'cancelled'
-                            ? 'text-red-600'
-                            : 'text-blue-600'
-                        }
-                      >
-                        {appointment.status}
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </div>
-
-      {/* Error Message */}
-      {actionError && (
-        <div className="mt-4 text-red-500 text-sm">{actionError}</div>
-      )}
     </div>
   );
 }
