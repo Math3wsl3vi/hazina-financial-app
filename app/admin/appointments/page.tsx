@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/configs/firebaseConfig'; // Adjust the import based on your Firebase setup
@@ -17,6 +17,8 @@ interface Appointment {
   status: 'scheduled' | 'completed' | 'cancelled';
   time: string;
   uid: string;
+  userEmail?: string; // Added to store user email
+  userName?: string; // Added to store user name
 }
 
 const Appointments = () => {
@@ -79,6 +81,8 @@ const Appointments = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Advisor</TableHead>
+              <TableHead>User Name</TableHead> {/* Added User Name column */}
+              <TableHead>User Email</TableHead> {/* Added User Email column */}
               <TableHead>Date</TableHead>
               <TableHead>Time</TableHead>
               <TableHead>Notes</TableHead>
@@ -90,6 +94,8 @@ const Appointments = () => {
             {appointmentsList.map((appointment) => (
               <TableRow key={appointment.id}>
                 <TableCell>{appointment.advisorName}</TableCell>
+                <TableCell>{appointment.userName || 'N/A'}</TableCell> {/* Display userName or fallback */}
+                <TableCell>{appointment.userEmail || 'N/A'}</TableCell> {/* Display userEmail or fallback */}
                 <TableCell>{new Date(appointment.date).toLocaleDateString()}</TableCell>
                 <TableCell>{appointment.time}</TableCell>
                 <TableCell>{appointment.notes || 'N/A'}</TableCell>
