@@ -15,6 +15,7 @@ interface Snapshot {
   title: string;
   content: string;
   author: string;
+  preview:string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -23,6 +24,7 @@ interface NewSnapshot {
   title: string;
   content: string;
   author: string;
+  preview:string;
 }
 
 export default function AdminSnapshotPage() {
@@ -34,6 +36,7 @@ export default function AdminSnapshotPage() {
     title: "",
     content: "",
     author: "",
+    preview:""
   });
 
   // Check admin status on component mount
@@ -51,6 +54,7 @@ export default function AdminSnapshotPage() {
               title: doc.data().title,
               content: doc.data().content,
               author: doc.data().author,
+              preview: doc.data().preview,
               createdAt: doc.data().createdAt?.toDate(),
               updatedAt: doc.data().updatedAt?.toDate(),
             }));
@@ -90,6 +94,7 @@ export default function AdminSnapshotPage() {
         title: doc.data().title,
         content: doc.data().content,
         author: doc.data().author,
+        preview: doc.data().preview,
         createdAt: doc.data().createdAt?.toDate(),
         updatedAt: doc.data().updatedAt?.toDate(),
       }));
@@ -100,6 +105,7 @@ export default function AdminSnapshotPage() {
         title: "",
         content: "",
         author: "",
+        preview:""
       });
     } catch (error) {
       console.error("Error adding snapshot:", error);
@@ -156,6 +162,18 @@ export default function AdminSnapshotPage() {
                 type="text"
                 value={newSnapshot.author}
                 onChange={(e) => setNewSnapshot({...newSnapshot, author: e.target.value})}
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="preview" className="block text-sm font-medium mb-1">
+                Preview
+              </label>
+              <Textarea
+                id="preview"
+                rows={5}
+                value={newSnapshot.preview}
+                onChange={(e) => setNewSnapshot({...newSnapshot, preview: e.target.value})}
                 required
               />
             </div>
