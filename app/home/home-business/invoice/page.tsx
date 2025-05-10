@@ -39,6 +39,7 @@ const InvoicingPage = () => {
   const [supplierPricePerItem, setSupplierPricePerItem] = useState('');
   const [supplierAmountToBePaid, setSupplierAmountToBePaid] = useState('');
   const [supplierAmountDue, setSupplierAmountDue] = useState('');
+  const [supplierDueDate, setSupplierDueDate] = useState('');
   const [supplierError, setSupplierError] = useState('');
   const [supplierSuccess, setSupplierSuccess] = useState('');
 
@@ -154,7 +155,8 @@ const InvoicingPage = () => {
       !supplierQuantity ||
       !supplierPricePerItem ||
       !supplierAmountToBePaid ||
-      !supplierAmountDue
+      !supplierAmountDue ||
+      !supplierDueDate
     ) {
       setSupplierError('Please fill in all fields');
       return;
@@ -191,6 +193,7 @@ const InvoicingPage = () => {
         pricePerItem: pricePerItem,
         amountToBePaid: amountToBePaid,
         amountDue: amountDue,
+        dueDate: supplierDueDate,
         userId: currentUser.uid,
         createdAt: serverTimestamp(),
       });
@@ -199,6 +202,7 @@ const InvoicingPage = () => {
       setSupplierProductService('');
       setSupplierQuantity('');
       setSupplierPricePerItem('');
+      setSupplierDueDate('');
       setSupplierAmountToBePaid('');
       setSupplierAmountDue('');
     } catch (error) {
@@ -345,8 +349,8 @@ const InvoicingPage = () => {
                     <div className="text-gray-600">
                       <span>{record.productService} | Qty: {record.quantity} | </span>
                       <span>Price/Item: KES {record.pricePerItem.toFixed(2)} | </span>
-                      <span>Due: {record.dueDate}</span>
                     </div>
+                    <span className='text-gray-600'>Due: {record.dueDate}</span>
                   </li>
                 ))}
               </ul>
@@ -399,6 +403,18 @@ const InvoicingPage = () => {
                 onChange={(e) => setSupplierQuantity(e.target.value)}
                 className="w-full"
                 placeholder="Enter quantity"
+              />
+            </div>
+            <div>
+              <Label htmlFor="supplierDueDate" className="block text-sm font-medium">
+                When (Due Date)
+              </Label>
+              <Input
+                id="supplierDueDate"
+                type="date"
+                value={supplierDueDate}
+                onChange={(e) => setSupplierDueDate(e.target.value)}
+                className="w-full"
               />
             </div>
             <div>
@@ -486,6 +502,7 @@ const InvoicingPage = () => {
                       <span>Price/Item: KES {record.pricePerItem.toFixed(2)} | </span>
                       <span>To Pay: KES {record.amountToBePaid?.toFixed(2)}</span>
                     </div>
+                    <span className='text-gray-600'>Due: {record.dueDate}</span>
                   </li>
                 ))}
               </ul>
@@ -496,7 +513,7 @@ const InvoicingPage = () => {
           )}
         </div>
       </div>
-      <div className='h-[105px]'></div>
+      <div className='h-[55px]'></div>
     </div>
   );
 };
