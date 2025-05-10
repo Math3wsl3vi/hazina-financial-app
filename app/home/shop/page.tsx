@@ -61,7 +61,7 @@ export default function ShopPage() {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen px-6 py-10 bg-white font-poppins">
+      <div className="h-full px-6 py-10 bg-white font-poppins mt-20">
         <h1 className="text-4xl font-bold text-center text-navy-1 mb-8 uppercase">
           Our Products
         </h1>

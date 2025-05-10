@@ -98,12 +98,12 @@ export default function Home() {
                   Get Started <ChevronRight className="ml-2 h-5 w-5" />
                 </Button>
                 
-                <Button 
+                {/* <Button 
                   variant="outline" 
                   className="border-2 border-teal-200 text-teal-700 px-8 py-6 rounded-xl font-bold text-lg hover:bg-teal-50 transition-all duration-300"
                 >
                   Watch Demo
-                </Button>
+                </Button> */}
               </div>
               
               <div className="flex items-center pt-6">
