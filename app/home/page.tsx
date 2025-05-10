@@ -20,6 +20,17 @@ import {
   ArrowRight
 } from "lucide-react";
 
+type FinanceType = "personal" | "business" | "shop" | "admin";
+
+interface Option {
+  type: FinanceType;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  color: string;
+  textColor: string;
+}
+
 export default function FinanceTypeSelect() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -49,7 +60,7 @@ export default function FinanceTypeSelect() {
     }
   };
 
-  const handleSelect = (type: "personal" | "business" | "shop" | "admin") => {
+  const handleSelect = (type: FinanceType) => {
     if (loading) return;
 
     if (type === "personal") {
@@ -71,7 +82,7 @@ export default function FinanceTypeSelect() {
     );
   }
 
-  const options = [
+  const baseOptions: Option[] = [
     {
       type: "personal",
       title: "Personal Finance",
@@ -95,16 +106,19 @@ export default function FinanceTypeSelect() {
       icon: <ShoppingBag className="h-8 w-8 text-yellow-600" />,
       color: " border-yellow-200",
       textColor: "text-yellow-800"
-    },
-    ...(isAdmin ? [{
-      type: "admin",
-      title: "Admin Panel",
-      description: "Access administrative controls and settings",
-      icon: <ShieldCheck className="h-8 w-8 text-red-600" />,
-      color: " border-red-200",
-      textColor: "text-red-500"
-    }] : [])
+    }
   ];
+
+  const adminOption: Option = {
+    type: "admin",
+    title: "Admin Panel",
+    description: "Access administrative controls and settings",
+    icon: <ShieldCheck className="h-8 w-8 text-red-600" />,
+    color: " border-red-200",
+    textColor: "text-red-500"
+  };
+
+  const options = isAdmin ? [...baseOptions, adminOption] : baseOptions;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-gray-50 font-poppins">
@@ -124,7 +138,7 @@ export default function FinanceTypeSelect() {
             <Card 
               key={option.type}
               className={`cursor-pointer ${option.color}`}
-              onClick={() => handleSelect(option.type as any)}
+              onClick={() => handleSelect(option.type)}
             >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className={`text-xl font-bold ${option.textColor}`}>{option.title}</CardTitle>
