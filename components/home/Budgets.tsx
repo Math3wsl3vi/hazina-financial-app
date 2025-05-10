@@ -43,15 +43,16 @@ type BudgetCategory = {
   icon: string;
   color: string;
   progressColor: string;
-  subcategories: Subcategory[]; // Use the new Subcategory type
+  subcategories: Subcategory[];
   userId: string;
 };
 
 type Subcategory = {
   title: string;
   spent: number;
-  createdAt: Date | import("firebase/firestore").Timestamp; // Support both Date and Timestamp
+  createdAt?: Date | import("firebase/firestore").Timestamp;
 };
+
 const categories = ["Needs", "Wants", "Savings"] as Category[];
 
 const getCategoryStyles = (title: string) => {
@@ -110,6 +111,17 @@ const Budgets: React.FC = () => {
   const queryClient = useQueryClient();
   const { currentUser, loading: authLoading } = useAuth();
 
+  // Helper function to format Timestamp or Date to readable date
+  const formatDate = (createdAt: Date | import("firebase/firestore").Timestamp | undefined) => {
+    if (!createdAt) return "N/A";
+    const date = createdAt instanceof Date ? createdAt : createdAt.toDate();
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
   const { data: budgetsData = [], isLoading: queryLoading } = useQuery({
     queryKey: ["budgets", currentUser?.uid],
     queryFn: async () => {
@@ -126,7 +138,6 @@ const Budgets: React.FC = () => {
       const budgets: BudgetCategory[] = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        // Map subcategories with the Subcategory type
         const convertedSubcategories = data.subcategories.map(
           (sub: Subcategory) => ({
             title: sub.title,
@@ -134,7 +145,7 @@ const Budgets: React.FC = () => {
             createdAt:
               sub.createdAt instanceof Date
                 ? sub.createdAt
-                : sub.createdAt?.toDate() || new Date(), // Handle Timestamp or Date
+                : sub.createdAt?.toDate() || new Date(),
           })
         );
         budgets.push({
@@ -152,9 +163,9 @@ const Budgets: React.FC = () => {
     if (!currentUser) return;
 
     const totals = {
-      income: 0, // Sum of allocated amounts
-      expenses: 0, // Sum of spent amounts
-      balance: 0, // Income - Expenses
+      income: 0,
+      expenses: 0,
+      balance: 0,
       userId: currentUser.uid,
     };
 
@@ -505,8 +516,8 @@ const Budgets: React.FC = () => {
                           height={20}
                         />
                       </div>
-                      <div className=" w-full">
-                        <div className="flex gap-2 ">
+                      <div className="w-full">
+                        <div className="flex gap-2">
                           <h3 className="font-poppins font-semibold text-sm">
                             {category.title}
                           </h3>
@@ -555,12 +566,7 @@ const Budgets: React.FC = () => {
                             {sub.title}
                           </span>
                           <p className="text-xs text-gray-500">
-                            Added on:{" "}
-                            {(sub.createdAt instanceof Date
-                              ? sub.createdAt
-                              : sub.createdAt.toDate()
-                            ).toLocaleDateString()}{" "}
-                            {/* Convert Timestamp to Date */}
+                            Added on: {formatDate(sub.createdAt)}
                           </p>
                         </div>
                         <div className="flex items-center space-x-2">
