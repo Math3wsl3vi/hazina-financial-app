@@ -11,7 +11,7 @@ export default function Home() {
   const router = useRouter()
   const auth = getAuth(app)
   const [loading, setLoading] = useState(true)
-  const [animationComplete, setAnimationComplete] = useState(false)
+
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -21,14 +21,10 @@ export default function Home() {
       setLoading(false)
     })
 
-    // Trigger animation completion after delay
-    const timer = setTimeout(() => {
-      setAnimationComplete(true)
-    }, 1800)
+    
 
     return () => {
       unsubscribe()
-      clearTimeout(timer)
     }
   }, [auth, router])
 
@@ -51,13 +47,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-teal-50 overflow-hidden font-poppins">
-      {/* Animated geometric shapes in background */}
-      <div className="fixed inset-0 overflow-hidden -z-10">
-        <div className={`absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-purple-300/20 blur-3xl transform transition-all duration-[2000ms] ${animationComplete ? 'translate-x-24 translate-y-12 scale-150' : ''}`}></div>
-        <div className={`absolute bottom-1/3 right-1/3 w-96 h-96 rounded-full bg-green-300/20 blur-3xl transform transition-all duration-[2500ms] ${animationComplete ? '-translate-x-24 -translate-y-12 scale-125' : ''}`}></div>
-        <div className={`absolute top-2/3 left-1/2 w-48 h-48 rounded-full bg-teal-300/20 blur-3xl transform transition-all duration-[3000ms] ${animationComplete ? 'translate-x-12 -translate-y-24 scale-150' : ''}`}></div>
-      </div>
+    <div className="min-h-screen overflow-hidden font-poppins">
 
       {/* Header with interactive elements */}
       <header className="pt-6 px-6 md:px-12 flex justify-between items-center">
@@ -77,13 +67,13 @@ export default function Home() {
         <div className="relative mx-auto mt-12 md:mt-24 px-6 md:px-12 max-w-7xl">
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 space-y-6 md:pr-12 z-10">
-              <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-medium mb-2">
-                <span className="animate-pulse mr-2 w-2 h-2 bg-green-600 rounded-full"></span>
+              <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm font-medium mb-2">
+                <span className="animate-pulse mr-2 w-2 h-2 bg-blue-600 rounded-full"></span>
                 New: Smart Saving Features
               </div>
               
               <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">
-                <span className="bg-gradient-to-r from-green-700 via-teal-700 to-purple-700 bg-clip-text text-transparent">Reimagine Your Financial Future</span>
+                <span className="bg-gradient-to-r from-green-700 via-teal-700 to-blue-700 bg-clip-text text-transparent">Reimagine Your Financial Future</span>
               </h1>
               
               <p className="text-lg md:text-xl text-gray-600 max-w-lg">
@@ -110,7 +100,7 @@ export default function Home() {
                 <div className="flex -space-x-2">
                   {[...Array(5)].map((_, i) => (
                     <div key={i} className={`w-8 h-8 rounded-full border-2 border-white bg-gradient-to-br ${
-                      ['from-purple-400 to-teal-400', 'from-green-400 to-cyan-400', 'from-green-400 to-teal-400', 'from-yellow-400 to-orange-400', 'from-red-400 to-pink-400'][i]
+                      ['from-blue-400 to-teal-400', 'from-green-400 to-cyan-400', 'from-green-400 to-teal-400', 'from-yellow-400 to-orange-400', 'from-red-400 to-pink-400'][i]
                     }`}></div>
                   ))}
                 </div>
@@ -192,7 +182,7 @@ export default function Home() {
         {/* Features section */}
         <div className="max-w-7xl mx-auto px-6 md:px-12 py-24">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-green-700 via-teal-700 to-purple-700 bg-clip-text text-transparent">Revolutionary Features</h2>
+            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-green-700 via-teal-700 to-blue-700 bg-clip-text text-transparent">Revolutionary Features</h2>
             <p className="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">Experience the next generation of financial technology with AI-powered insights and global accessibility.</p>
           </div>
           
@@ -236,7 +226,7 @@ export default function Home() {
         {/* CTA section */}
         <div className="max-w-7xl mx-auto px-6 md:px-12 py-24 text-center">
           <div className="max-w-3xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-green-700 via-teal-700 to-purple-700 bg-clip-text text-transparent mb-6">
+            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-green-700 via-teal-700 to-blue-700 bg-clip-text text-transparent mb-6">
               Start Your Financial Evolution Today
             </h2>
             <p className="text-xl text-gray-600 mb-8">

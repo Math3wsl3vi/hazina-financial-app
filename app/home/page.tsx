@@ -112,7 +112,7 @@ export default function FinanceTypeSelect() {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-2 text-gray-800">H A Z I N A</h1>
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-10">
-          <p className="bg-gradient-to-r from-green-700 via-teal-700 to-purple-700 bg-clip-text text-transparent">Your one stop financial powerhouse</p>
+          <p className="bg-gradient-to-r from-green-700 via-teal-700 to-blue-700 bg-clip-text text-transparent">Your one stop financial powerhouse</p>
           </h1>
           <p className="text-gray-600 text-lg">
             Choose how you want to get started:
