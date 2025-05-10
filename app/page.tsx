@@ -16,7 +16,7 @@ export default function Home() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        router.push('/')
+        router.push('/home')
       }
       setLoading(false)
     })
