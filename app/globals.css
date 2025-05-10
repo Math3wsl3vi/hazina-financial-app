@@ -30,6 +30,20 @@ a {
   }
 }
 
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(59, 130, 246, 0.7);
+  }
+}
+
+.animate-glow {
+  animation: glow 2.5s infinite ease-in-out;
+}
+
+
 
 ::-webkit-scrollbar{
   display:none;
