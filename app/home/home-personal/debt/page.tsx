@@ -290,7 +290,7 @@ export default function DebtManagementPage() {
       {/* Actions Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Add New Creditor */}
-        <Card>
+        <Card className="bg-red-50 border">
           <CardHeader>
             <CardTitle>Add New Creditor (Debt)</CardTitle>
           </CardHeader>
@@ -320,7 +320,7 @@ export default function DebtManagementPage() {
         </Card>
 
         {/* Add New Debtor */}
-        <Card>
+        <Card className="bg-green-50 border">
           <CardHeader>
             <CardTitle>Add New Debtor (Debt)</CardTitle>
           </CardHeader>
@@ -352,7 +352,7 @@ export default function DebtManagementPage() {
       </div>
 
       {/* Analytics Section */}
-      <Card>
+      <Card className="bg-green-50 border border-green-500">
         <CardHeader>
           <CardTitle>Analytics</CardTitle>
         </CardHeader>
@@ -368,7 +368,7 @@ export default function DebtManagementPage() {
           </div>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="bg-green-50 border border-green-500">
         <CardHeader>
           <CardTitle>Repayment Methods</CardTitle>
         </CardHeader>
