@@ -1,6 +1,6 @@
 # 💰 Hazina – Personal & Business Finance Platform
 
-Hazina is a modern, mobile-first web application designed to help individuals and business owners take full control of their finances. It offers budgeting tools, investment resources, financial consultation, and essential accounting utilities – all tailored to your financial journey.
+Hazina is a modern, mobile-first web application designed to help individuals and business owners take full control of their finances. It offers budgeting tools, investment resources, financial consultation, and essential accounting utilities – all tailored to your wonderful financial journey.
 
 ---
 
