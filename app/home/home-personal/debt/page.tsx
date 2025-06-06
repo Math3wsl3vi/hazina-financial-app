@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
-import { addDoc, collection, getDocs, serverTimestamp } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, getDocs, serverTimestamp } from "firebase/firestore";
 import { db } from "@/configs/firebaseConfig";
 import { toast } from 'react-hot-toast';
 import { useRouter } from "next/navigation";
@@ -177,6 +177,36 @@ export default function DebtManagementPage() {
     }
   };
 
+  const handleDeleteCreditor = async (id:string) =>{
+    try {
+      await deleteDoc(doc(db, "creditors", id))
+      setCreditors(creditors.filter(creditor => creditor.id !== id))
+      setUpcomingPayments(upcomingPayments.filter(payment=> payment.id !== id))
+      toast.success('Creditor Deleted successfully')
+      
+    } catch (error) {
+      console.log('error while deleting', error)
+      toast.error('failed to delete')
+      
+    }
+
+  }
+
+  const handleDeleteDebtor = async (id:string) =>{
+    try {
+      await deleteDoc(doc(db, "debtors", id))
+      setDebtors(debtors.filter(debtor => debtor.id !== id))
+      setUpcomingPayments(upcomingPayments.filter(payment=> payment.id !== id))
+      toast.success('Debtor Deleted successfully')
+      
+    } catch (error) {
+      console.log('error while deleting', error)
+      toast.error('failed to delete')
+      
+    }
+
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -203,6 +233,7 @@ export default function DebtManagementPage() {
                   <TableHead>Amount</TableHead>
                   <TableHead>Due Date</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -212,6 +243,11 @@ export default function DebtManagementPage() {
                     <TableCell>${creditor.amount}</TableCell>
                     <TableCell>{new Date(creditor.dueDate).toLocaleDateString()}</TableCell>
                     <TableCell>{creditor.status}</TableCell>
+                    <TableCell>
+                      <Button 
+                      onClick={()=>handleDeleteCreditor(creditor.id!)}
+                      className="border bg-transparent border-red-500 text-black">Delete</Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -235,6 +271,7 @@ export default function DebtManagementPage() {
                   <TableHead>Amount</TableHead>
                   <TableHead>Due Date</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -244,6 +281,11 @@ export default function DebtManagementPage() {
                     <TableCell>${debtor.amount}</TableCell>
                     <TableCell>{new Date(debtor.dueDate).toLocaleDateString()}</TableCell>
                     <TableCell>{debtor.status}</TableCell>
+                    <TableCell>
+                      <Button 
+                      onClick={()=>handleDeleteDebtor(debtor.id!)}
+                      className="border bg-transparent border-red-500 text-black">Delete</Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
