@@ -217,9 +217,9 @@ export default function DebtManagementPage() {
               </TableBody>
             </Table>
           </CardContent>
-          <CardFooter className="flex justify-end">
+          {/* <CardFooter className="flex justify-end">
             <Button variant="outline">View All Creditors</Button>
-          </CardFooter>
+          </CardFooter> */}
         </Card>
 
         {/* Debtors Card */}
@@ -249,9 +249,9 @@ export default function DebtManagementPage() {
               </TableBody>
             </Table>
           </CardContent>
-          <CardFooter className="flex justify-end">
+          {/* <CardFooter className="flex justify-end">
             <Button variant="outline">View All Debtors</Button>
-          </CardFooter>
+          </CardFooter> */}
         </Card>
       </div>
 
@@ -282,9 +282,9 @@ export default function DebtManagementPage() {
             </TableBody>
           </Table>
         </CardContent>
-        <CardFooter className="flex justify-end">
+        {/* <CardFooter className="flex justify-end">
           <Button variant="outline">View All Payments</Button>
-        </CardFooter>
+        </CardFooter> */}
       </Card>
 
       {/* Actions Section */}
