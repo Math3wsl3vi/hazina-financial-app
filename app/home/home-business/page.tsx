@@ -280,7 +280,7 @@ const TrackerPage = () => {
                       {formatDate(record.createdAt)}
                     </p>
                   </div>
-                  <div className="flex items-center space-x-2 mt-2 sm:mt-0">
+                  <div className="flex items-center justify-between w-full space-x-2 mt-2 sm:mt-0">
                     <span className="text-sm font-semibold">
                       KES {(record.amount || 0).toFixed(2)}
                     </span>
@@ -358,7 +358,7 @@ const TrackerPage = () => {
                       {formatDate(record.createdAt)}
                     </p>
                   </div>
-                  <div className="flex items-center space-x-2 mt-2 sm:mt-0">
+                  <div className="flex items-center justify-between w-full space-x-2 mt-2 sm:mt-0">
                     <span className="text-sm font-semibold">
                       KES {(record.amount || 0).toFixed(2)}
                     </span>
