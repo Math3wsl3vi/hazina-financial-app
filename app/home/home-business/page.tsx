@@ -219,8 +219,29 @@ const TrackerPage = () => {
     );
   }
 
+   const totalIncome = incomeRecords.reduce((sum, record) => sum + (record.amount || 0), 0);
+  const totalExpenses = expenseRecords.reduce((sum, record) => sum + (record.amount || 0), 0);
+  // const balance = totalIncome - totalExpenses;
+
   return (
     <div className="p-5 max-w-md mx-auto font-poppins">
+      {/* summary section */}
+      <div className="mb-6 bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-sm font-medium">Total Income:</span>
+          <span className="text-green-600 font-semibold">KES {totalIncome.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-sm font-medium">Total Expenses:</span>
+          <span className="text-red-600 font-semibold">KES {totalExpenses.toFixed(2)}</span>
+        </div>
+        {/* <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+          <span className="text-sm font-medium">Balance:</span>
+          <span className={`font-semibold ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            KES {balance.toFixed(2)}
+          </span>
+        </div> */}
+      </div>
       {/* Income Section */}
       <div className="mb-8">
         <h2 className="font-poppins text-xl font-semibold mb-4">Income</h2>
