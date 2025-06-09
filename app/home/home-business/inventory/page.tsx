@@ -222,6 +222,7 @@ const InventoryPayrollPage = () => {
       return;
     }
 
+    // get quantity comment
     const quantity = Number(inQuantity);
     const price = Number(inPrice);
 
