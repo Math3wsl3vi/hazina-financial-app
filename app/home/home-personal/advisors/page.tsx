@@ -37,6 +37,8 @@ export default function Consultants() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [selectedAdvisor, setSelectedAdvisor] = useState<Advisor | null>(null);
+  const [showAllAppointments, setShowAllAppointments] = useState(false);
+
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -144,6 +146,10 @@ export default function Consultants() {
     );
   }
 
+  const displayedAppointments = showAllAppointments 
+    ? appointments 
+    : appointments.slice(0, 3);
+
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 font-poppins">
       <div className="max-w-7xl mx-auto">
@@ -169,15 +175,15 @@ export default function Consultants() {
                   </p>
                 ) : (
                   <div className="space-y-4">
-                    {appointments
-                      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-                      .map((appointment) => {
-                        const advisor = advisors.find((a) => a.id === appointment.advisorId);
-                        return (
-                          <div 
-                            key={appointment.id} 
-                            className="border rounded-lg p-4 hover:shadow-md transition-shadow"
-                          >
+                    {displayedAppointments
+                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                        .map((appointment) => {
+                          const advisor = advisors.find((a) => a.id === appointment.advisorId);
+                          return (
+                            <div 
+                              key={appointment.id} 
+                              className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                            >
                             <div className="flex justify-between items-start">
                               <div>
                                 <h3 className="font-medium">{advisor?.name || appointment.advisorName}</h3>
@@ -234,6 +240,17 @@ export default function Consultants() {
                           </div>
                         );
                       })}
+                      {appointments.length > 3 && (
+                      <div className="text-center mt-4">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowAllAppointments(!showAllAppointments)}
+                        >
+                          {showAllAppointments ? 'Show Less' : 'Show More'}
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>
