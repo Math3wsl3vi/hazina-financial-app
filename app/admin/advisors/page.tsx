@@ -28,6 +28,7 @@ export default function AddAdvisorPage() {
     bio: "",
     imageUrl: "",
     type: "personal", // personal or business
+    email:''
   });
 
   const router = useRouter();
@@ -109,6 +110,16 @@ export default function AddAdvisorPage() {
                 ...formData,
                 specialization: e.target.value.split(",").map((s) => s.trim()),
               })
+            }
+          />
+        </div>
+         <div>
+          <Label>Email</Label>
+          <Input
+            type="email"
+            value={formData.email}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
             }
           />
         </div>
